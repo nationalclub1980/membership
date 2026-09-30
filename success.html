@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Membership Card | NATIONAL ARTS & SPORTS CLUB</title>
+  <meta name="description" content="Official Digital Membership Card display for National Arts & Sports Club.">
+  <link rel="icon" type="image/png" href="assets/club-logo.png">
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- html2canvas Library for rendering HD downloadable card image -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- qrcode.js Library for rendering QR code inside membership card -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Accessibility Bar -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="top-bar-info">
+        <span>📍 Millath Nagar, Udma Padinhar (P.O), 671 319, Kasaragod</span>
+        <span>|</span>
+        <span>Since 1980</span>
+      </div>
+      <div class="top-bar-controls">
+        <div class="control-label" data-i18n="text_size">TEXT SIZE</div>
+        <div class="btn-toggle-group">
+          <button class="btn-toggle-opt btn-text-size active" data-size="normal">Normal</button>
+          <button class="btn-toggle-opt btn-text-size" data-size="large">Large</button>
+          <button class="btn-toggle-opt btn-text-size" data-size="extralarge">XL</button>
+        </div>
+        <select class="lang-select lang-select-sm" aria-label="Select Language">
+          <option value="en">English</option>
+          <option value="ml">മലയാളം</option>
+          <option value="kn">കನ್ನಡ</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand">
+        <img src="assets/club-logo.png" class="brand-logo-img" alt="Official Logo" onerror="this.src='assets/club-logo.png'">
+        <div class="brand-text-container">
+          <span class="brand-title">NATIONAL ARTS & SPORTS CLUB</span>
+          <span class="brand-meta">Reg. No. 75/2000 | Affiliated to Nehru Yuvakendra</span>
+        </div>
+      </a>
+      <button class="mobile-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰ Menu</button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html" class="nav-link" data-i18n="nav_home">Home</a></li>
+        <li><a href="register.html" class="nav-link" data-i18n="nav_membership">Membership</a></li>
+        <li><a href="verify.html" class="nav-link" data-i18n="nav_verify">Verify Membership</a></li>
+        <li><a href="about.html" class="nav-link" data-i18n="nav_about">About</a></li>
+        <li><a href="contact.html" class="nav-link" data-i18n="nav_contact">Contact</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: 2.5rem; padding-bottom: 5rem;">
+    <!-- Welcome Header -->
+    <div class="text-center" style="margin-bottom: 2rem;">
+      <h1 style="font-size: 2.2rem; color: var(--primary-900);">Official Digital Membership Card</h1>
+      <p style="color: var(--slate-600); max-width: 600px; margin: 0.5rem auto 0;">
+        Welcome to <span class="org-name-text">NATIONAL ARTS & SPORTS CLUB</span>. Your official digital membership card is generated below.
+      </p>
+    </div>
+
+    <!-- Assigned ID Banner -->
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div style="display: inline-flex; align-items: center; gap: 0.5rem; background-color: var(--primary-50); border: 1px solid var(--primary-200); padding: 0.75rem 1.5rem; border-radius: var(--radius-full); font-weight: 700; color: var(--primary-800);">
+        <span>YOUR ASSIGNED MEMBERSHIP ID:</span>
+        <span id="displayMemberId" style="font-family: monospace; font-size: 1.2rem; color: var(--primary-700);">NASC-2026-0001</span>
+      </div>
+    </div>
+
+    <!-- Digital Card Canvas Root -->
+    <div id="digitalCardContainer" style="margin: 2rem 0;">
+      <!-- Dynamically Populated by membership.js -->
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2.5rem;" class="no-print">
+      <button id="downloadCardBtn" class="btn btn-primary btn-lg">
+        <span>📥</span> Download Membership Card
+      </button>
+
+      <button onclick="window.print()" class="btn btn-secondary btn-lg">
+        <span>🖨️</span> Print / View Card
+      </button>
+
+      <a href="verify.html" class="btn btn-outline-primary btn-lg">
+        <span>🔍</span> Verify Membership
+      </a>
+
+      <a href="index.html" class="btn btn-secondary btn-lg">
+        <span>🏠</span> Back to Home
+      </a>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer no-print">
+    <div class="container">
+      <div class="footer-content">
+        <div>
+          <h4 class="footer-title">NATIONAL ARTS & SPORTS CLUB</h4>
+          <p style="font-size: 0.88rem; color: var(--slate-300);" data-i18n="org_tagline_text">Reg. No. 75/2000 | Affiliated to Nehru Yuvakendra (Reg. No. NYKK-4912/KNG/630/2015-16)</p>
+          <p style="font-size: 0.85rem; color: var(--slate-400); margin-top: 0.4rem;">Since 1980 | <span data-i18n="org_address_text">Millath Nagar, Udma Padinhar (P.O), 671 319, Kasaragod</span></p>
+        </div>
+
+        <div>
+          <h4 class="footer-title" data-i18n="quick_access_title">Quick Access Links</h4>
+          <ul class="footer-links">
+            <li><a href="register.html" data-i18n="nav_membership">Become a Member</a></li>
+            <li><a href="renewal.html" data-i18n="card_existing_title">Existing Member Renewal</a></li>
+            <li><a href="verify.html" data-i18n="nav_verify">Verify Membership</a></li>
+            <li><a href="about.html" data-i18n="nav_about">About Us</a></li>
+            <li><a href="contact.html" data-i18n="nav_contact">Contact Us</a></li>
+            <li><a href="admin.html" style="font-size: 0.78rem; opacity: 0.6;">Admin Portal</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; <span class="current-year">2026</span> NATIONAL ARTS & SPORTS CLUB. All Rights Reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/membership.js"></script>
+</body>
+</html>

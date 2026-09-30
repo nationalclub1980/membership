@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | NATIONAL ARTS & SPORTS CLUB</title>
+  <meta name="description" content="Protected Membership Administration Dashboard for National Arts & Sports Club.">
+  <link rel="icon" type="image/png" href="assets/club-logo.png">
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- SheetJS CDN for native Excel (.xlsx) export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Accessibility Bar -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="top-bar-info">
+        <span>📍 Millath Nagar, Udma Padinhar (P.O), 671 319, Kasaragod</span>
+        <span>|</span>
+        <span>Since 1980</span>
+      </div>
+      <div class="top-bar-controls">
+        <div class="control-label" data-i18n="text_size">TEXT SIZE</div>
+        <div class="btn-toggle-group">
+          <button class="btn-toggle-opt btn-text-size active" data-size="normal">Normal</button>
+          <button class="btn-toggle-opt btn-text-size" data-size="large">Large</button>
+          <button class="btn-toggle-opt btn-text-size" data-size="extralarge">XL</button>
+        </div>
+        <select class="lang-select lang-select-sm" aria-label="Select Language">
+          <option value="en">English</option>
+          <option value="ml">മലയാളം</option>
+          <option value="kn">കನ್ನಡ</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand">
+        <img src="assets/club-logo.png" class="brand-logo-img" alt="Official Logo" onerror="this.src='assets/club-logo.png'">
+        <div class="brand-text-container">
+          <span class="brand-title">NATIONAL ARTS & SPORTS CLUB</span>
+          <span class="brand-meta">Reg. No. 75/2000 | Affiliated to Nehru Yuvakendra</span>
+        </div>
+      </a>
+      <button class="mobile-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰ Menu</button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html" class="nav-link" data-i18n="nav_home">Home</a></li>
+        <li><a href="register.html" class="nav-link" data-i18n="nav_membership">Membership</a></li>
+        <li><a href="verify.html" class="nav-link" data-i18n="nav_verify">Verify Membership</a></li>
+        <li><a href="about.html" class="nav-link" data-i18n="nav_about">About</a></li>
+        <li><a href="contact.html" class="nav-link" data-i18n="nav_contact">Contact</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Admin App Root -->
+  <main class="container" id="adminApp" style="padding-top: 2.5rem; padding-bottom: 5rem;">
+
+    <!-- 1. Authentication Section -->
+    <section id="adminAuthSection" class="container-narrow" style="margin: 3rem auto;">
+      <div class="card-box text-center">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
+        <h2 style="margin-bottom: 0.5rem;">Admin Authorization Required</h2>
+        <p style="color: var(--slate-600); margin-bottom: 1.5rem;">
+          Enter the administrator access passcode to manage membership records.
+        </p>
+
+        <form id="adminLoginForm" style="max-width: 380px; margin: 0 auto;">
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <input 
+              type="password" 
+              id="adminPinInput" 
+              class="form-control text-center" 
+              placeholder="Enter Admin PIN Passcode"
+              required
+              style="letter-spacing: 2px; font-size: 1.1rem;"
+            >
+            <div class="form-hint" style="margin-top: 0.4rem;">Default PIN for testing: <code>admin123</code></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            Unlock Admin Dashboard
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 2. Protected Dashboard Section (Hidden by default) -->
+    <section id="adminDashboardSection" style="display: none;">
+      
+      <!-- Top Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+        <div>
+          <h1 style="font-size: 2rem;">Membership Admin Dashboard</h1>
+          <p style="color: var(--slate-600);">Master Central Membership Database Management</p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem;">
+          <button id="exportExcelBtn" class="btn btn-success">
+            <span>📊</span> Download Excel (.xlsx)
+          </button>
+          <button onclick="location.reload()" class="btn btn-secondary">
+            <span>🔄</span> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon primary">👥</div>
+          <div>
+            <div class="stat-num" id="statTotalMembers">0</div>
+            <div class="stat-label">Total Registered Members</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon success">✅</div>
+          <div>
+            <div class="stat-num" id="statActiveMembers">0</div>
+            <div class="stat-label">Active Membership Cards</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon danger">⚠️</div>
+          <div>
+            <div class="stat-num" id="statExpiredMembers">0</div>
+            <div class="stat-label">Expired / Suspended</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Controls & Table Card -->
+      <div class="card-box" style="padding: 1.5rem;">
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+          
+          <!-- Search input -->
+          <div style="flex-grow: 1; min-width: 260px;">
+            <input 
+              type="text" 
+              id="adminSearchInput" 
+              class="form-control" 
+              placeholder="🔍 Search by Member ID, Full Name, or Phone..."
+            >
+          </div>
+
+          <!-- Status Filter -->
+          <div style="width: 200px;">
+            <select id="adminStatusFilter" class="form-control">
+              <option value="all">All Membership Status</option>
+              <option value="active">Active Members</option>
+              <option value="expired">Expired Members</option>
+              <option value="suspended">Suspended Members</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Master Data Table -->
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Membership ID</th>
+                <th>Member Name</th>
+                <th>Phone</th>
+                <th>Type</th>
+                <th>Membership Tier</th>
+                <th>Joining Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminMembersTbody">
+              <!-- Dynamically Populated by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Admin Modal Popup -->
+  <div class="modal-backdrop" id="adminModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeAdminModal()">✕</button>
+      <div id="adminModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-bottom">
+      <p>&copy; <span class="current-year">2026</span> NATIONAL ARTS & SPORTS CLUB. Protected Administrator Portal.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
