@@ -72,7 +72,7 @@ Your Google Drive storage folders are configured:
 1. Open your Google Sheet: [Master Membership Database](https://docs.google.com/spreadsheets/d/1yWsBD81iJvH650lF94aTf6QoTcczXQ_cHD0xzBCE674/edit?usp=sharing)
 2. In the top menu, click **Extensions** ➔ **Apps Script**.
 3. Delete any default code in `Code.gs`.
-4. Copy and paste the entire code from the [`Code.gs`](file:///c:/Users/SHEREEF%20K/Desktop/New%20folder%20(3)/Code.gs) file in this repository.
+4. Copy and paste the entire code from the [`Code.gs`](Code.gs) file in this repository.
 
 ### Step 4: Deploy Apps Script as a Web App
 1. Click the blue **Deploy** button at top right ➔ Select **New deployment**.
