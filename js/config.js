@@ -9,15 +9,23 @@ const CONFIG = {
   // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
   WEB_APP_URL: "https://script.google.com/macros/s/AKfycbw-VR6_0mk7LPT3PgXReyHyKsV1U-TtuGCiZm6k9za41o_ZXm8Z09P9Ll5czuf55F8-/exec", 
 
-  // 2. Organization Information
+  // 2. Organization Information & Official Leadership
   ORG_NAME: "NATIONAL ARTS & SPORTS CLUB",
   ORG_SHORT_NAME: "NASC",
   ORG_TAGLINE: "(Reg. No. 75/2000). (Affiliated to Nehru Yuvakendra, Reg. No. NYKK-4912/KNG/630/2015-16)",
   ORG_SINCE: "1980",
   ORG_LOGO: "assets/club-logo.png",
-  ORG_ADDRESS: "Millath Nagar, Udma Padinhar (P.O), 671 319, Kasaragod",
-  ORG_EMAIL: "contact@nasc.org",
-  ORG_PHONE: "+91 9207101461",
+  ORG_ADDRESS: "Millath Nagar, Udma Padinhar (P.O), 671 319, Kasaragod District, Kerala, India",
+  ORG_EMAIL: "nationalculb1980@gmail.com",
+  ORG_PHONE: "+91 87142 10696",
+  ORG_INSTAGRAM: "@national_millathnagar_udmawest",
+  ORG_INSTAGRAM_URL: "https://www.instagram.com/national_millathnagar_udmawest",
+
+  // Executive Committee Leadership
+  PRESIDENT_NAME: "Abdulla PK",
+  PRESIDENT_PHONE: "+91 87142 10696",
+  SECRETARY_NAME: "Mujeeb Rahman Kaniyil",
+  SECRETARY_PHONE: "+91 98467 91909",
 
   // 3. Membership ID Format Options
   // Generated Format: [ID_PREFIX]-[ID_YEAR]-[SEQUENTIAL_NUMBER] (e.g. NASC-2026-0001)
