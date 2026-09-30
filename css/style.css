@@ -872,11 +872,11 @@ textarea.form-control {
 .export-digital-card .card-org-logo {
   width: 84px !important;
   height: 84px !important;
-  border-radius: 10px !important;
-  background: #ffffff !important;
-  padding: 4px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
   object-fit: contain !important;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+  box-shadow: none !important;
   flex-shrink: 0 !important;
 }
 
@@ -1074,11 +1074,11 @@ textarea.form-control {
 .card-org-logo {
   width: 52px;
   height: 52px;
-  border-radius: 6px;
-  background: #ffffff;
-  padding: 2px;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
   object-fit: contain;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: none;
   flex-shrink: 0;
 }
 
