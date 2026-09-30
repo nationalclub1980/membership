@@ -59,9 +59,9 @@ function initFormDefaults() {
         return; // Retain Overseas selection
       }
 
-      if (age <= 15) {
+      if (age < 15) {
         typeSelect.value = "Child Membership";
-      } else if (age >= 16 && age <= 20) {
+      } else if (age >= 15 && age <= 25) {
         typeSelect.value = "Youth Membership";
       } else {
         typeSelect.value = "Adult Membership";
@@ -212,13 +212,13 @@ function initFormValidation(form) {
           markInvalid('membershipType');
           showToast(`Child Membership is for applicants up to 15 years old. Applicant is ${age} years old.`, 'danger');
           isValid = false;
-        } else if (membershipType.includes('Youth') && (age < 16 || age > 20)) {
+        } else if (membershipType.includes('Youth') && (age < 15 || age > 25)) {
           markInvalid('membershipType');
-          showToast(`Youth Membership is for applicants between 16 and 20 years old. Applicant is ${age} years old.`, 'danger');
+          showToast(`Youth Membership is for applicants between 15 and 25 years old. Applicant is ${age} years old.`, 'danger');
           isValid = false;
-        } else if (membershipType.includes('Adult') && age < 21) {
+        } else if (membershipType.includes('Adult') && age <= 25) {
           markInvalid('membershipType');
-          showToast(`Adult Membership is for applicants 21 years and older. Applicant is ${age} years old.`, 'danger');
+          showToast(`Adult Membership is for applicants above 25 years old. Applicant is ${age} years old.`, 'danger');
           isValid = false;
         }
       }

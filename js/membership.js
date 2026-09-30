@@ -119,16 +119,16 @@ function renderDigitalCard(member) {
   const cardHtml = `
     <div class="printable-card-area">
       <div class="digital-card" id="membershipCardElement">
-        <div class="card-gold-stripe"></div>
+        <div class="diagonal"></div>
         
         <!-- Header -->
         <div class="card-header-row">
           <div class="card-org-branding">
-            <img src="${CONFIG.ORG_LOGO}" class="card-org-logo" alt="Logo" onerror="this.src='assets/logo.svg'">
+            <img src="${CONFIG.ORG_LOGO}" class="card-org-logo" alt="Logo" onerror="this.src='assets/club-logo.png'">
             <div>
               <div class="card-org-name">${CONFIG.ORG_NAME}</div>
               <div class="card-org-sub">${CONFIG.ORG_TAGLINE}</div>
-              <div class="card-org-address" style="font-size: 0.6rem; color: #94a3b8; margin-top: 2px;">${CONFIG.ORG_ADDRESS}</div>
+              <div class="card-org-address">${CONFIG.ORG_ADDRESS}</div>
             </div>
           </div>
           <span class="card-badge-type">${safeType}</span>
@@ -137,7 +137,7 @@ function renderDigitalCard(member) {
         <!-- Body -->
         <div class="card-body-row">
           <div class="card-photo-box">
-            <img src="${photoSrc}" alt="${safeName}" onerror="this.src='assets/logo.svg'">
+            <img src="${photoSrc}" alt="${safeName}" onerror="this.src='assets/club-logo.png'">
           </div>
           
           <div class="card-details-box">
@@ -150,7 +150,7 @@ function renderDigitalCard(member) {
                 <span class="card-info-val">${safeNationality}</span>
               </div>
               <div class="card-info-item">
-                <span class="card-info-label">COUNTRY</span>
+                <span class="card-info-label">RESIDENCE</span>
                 <span class="card-info-val">${safeCountry}</span>
               </div>
               <div class="card-info-item">
@@ -167,10 +167,7 @@ function renderDigitalCard(member) {
 
         <!-- Footer -->
         <div class="card-footer-row">
-          <div class="card-security-chip">
-            <div class="card-chip-icon"></div>
-            <span class="card-status-pill">${safeStatus}</span>
-          </div>
+          <span class="card-status-pill">${safeStatus} MEMBER</span>
 
           <div class="card-qr-box" id="cardQrCode" title="Scan to Verify"></div>
         </div>
@@ -192,16 +189,16 @@ function renderDigitalCard(member) {
 
   const exportCardHtml = `
     <div class="export-digital-card" id="exportMembershipCardElement">
-      <div class="card-gold-stripe"></div>
+      <div class="diagonal"></div>
       
       <!-- Header -->
       <div class="card-header-row">
         <div class="card-org-branding">
-          <img src="${CONFIG.ORG_LOGO}" class="card-org-logo" alt="Logo" onerror="this.src='assets/logo.svg'">
+          <img src="${CONFIG.ORG_LOGO}" class="card-org-logo" alt="Logo" onerror="this.src='assets/club-logo.png'">
           <div>
             <div class="card-org-name">${CONFIG.ORG_NAME}</div>
             <div class="card-org-sub">${CONFIG.ORG_TAGLINE}</div>
-            <div class="card-org-address" style="font-size: 0.72rem; color: #94a3b8; margin-top: 3px;">${CONFIG.ORG_ADDRESS}</div>
+            <div class="card-org-address">${CONFIG.ORG_ADDRESS}</div>
           </div>
         </div>
         <span class="card-badge-type">${safeType}</span>
@@ -210,7 +207,7 @@ function renderDigitalCard(member) {
       <!-- Body -->
       <div class="card-body-row">
         <div class="card-photo-box">
-          <img src="${photoSrc}" alt="${safeName}" onerror="this.src='assets/logo.svg'">
+          <img src="${photoSrc}" alt="${safeName}" onerror="this.src='assets/club-logo.png'">
         </div>
         
         <div class="card-details-box">
@@ -223,7 +220,7 @@ function renderDigitalCard(member) {
               <span class="card-info-val">${safeNationality}</span>
             </div>
             <div class="card-info-item">
-              <span class="card-info-label">COUNTRY</span>
+              <span class="card-info-label">RESIDENCE</span>
               <span class="card-info-val">${safeCountry}</span>
             </div>
             <div class="card-info-item">
@@ -240,10 +237,7 @@ function renderDigitalCard(member) {
 
       <!-- Footer -->
       <div class="card-footer-row">
-        <div class="card-security-chip">
-          <div class="card-chip-icon"></div>
-          <span class="card-status-pill">${safeStatus}</span>
-        </div>
+        <span class="card-status-pill">${safeStatus} MEMBER</span>
 
         <div class="card-qr-box" id="exportCardQrCode" title="Scan to Verify"></div>
       </div>

@@ -272,7 +272,7 @@ function formatDate(dateStr) {
  * Convert Google Drive viewer URL to direct image display URL
  */
 function formatDriveImageUrl(url) {
-  if (!url) return 'assets/logo.svg';
+  if (!url) return 'assets/club-logo.png';
   if (url.startsWith('data:image/')) return url;
   if (url.includes('lh3.googleusercontent.com')) return url;
 

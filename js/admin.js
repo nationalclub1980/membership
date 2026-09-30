@@ -838,10 +838,10 @@ function openEditMemberModal(membershipId) {
         <div class="form-group form-group-third">
           <label class="form-label">Membership Type</label>
           <select id="editMembershipType" class="form-control">
-            <option value="Child Membership" ${member.membershipType === 'Child Membership' ? 'selected' : ''}>Child Membership (Up to 15 Years)</option>
-            <option value="Youth Membership" ${member.membershipType === 'Youth Membership' ? 'selected' : ''}>Youth Membership (16–20 Years)</option>
-            <option value="Adult Membership" ${member.membershipType === 'Adult Membership' || !member.membershipType ? 'selected' : ''}>Adult Membership (21+ Years)</option>
-            <option value="Overseas / Pravasi Membership" ${member.membershipType === 'Overseas / Pravasi Membership' ? 'selected' : ''}>Overseas / Pravasi Membership</option>
+            <option value="Child Membership" ${member.membershipType === 'Child Membership' ? 'selected' : ''}>Child Membership (Up to 15 Years) — ₹100 / Year</option>
+            <option value="Youth Membership" ${member.membershipType === 'Youth Membership' ? 'selected' : ''}>Youth Membership (15–25 Years) — ₹300 / Year</option>
+            <option value="Adult Membership" ${member.membershipType === 'Adult Membership' || !member.membershipType ? 'selected' : ''}>Adult Membership (Above 25 Years) — ₹600 / Year</option>
+            <option value="Overseas / Pravasi Membership" ${member.membershipType === 'Overseas / Pravasi Membership' ? 'selected' : ''}>Overseas / Pravasi Membership — AED 60 / Year</option>
           </select>
         </div>
 
