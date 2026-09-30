@@ -10,6 +10,8 @@
   
   <!-- html2canvas Library for rendering HD downloadable card image -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- jsPDF Library for rendering printable PDF membership card -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- qrcode.js Library for rendering QR code inside membership card -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
@@ -84,11 +86,15 @@
 
     <!-- Action Buttons -->
     <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2.5rem;" class="no-print">
-      <button id="downloadCardBtn" class="btn btn-primary btn-lg">
-        <span>📥</span> Download Membership Card
+      <button id="saveCardBtn" class="btn btn-primary btn-lg">
+        <span>🖼️</span> Save Membership Card
       </button>
 
-      <button onclick="window.print()" class="btn btn-secondary btn-lg">
+      <button id="downloadPdfBtn" class="btn btn-secondary btn-lg">
+        <span>📄</span> Download PDF
+      </button>
+
+      <button onclick="window.print()" class="btn btn-outline-primary btn-lg">
         <span>🖨️</span> Print / View Card
       </button>
 
@@ -99,6 +105,17 @@
       <a href="index.html" class="btn btn-secondary btn-lg">
         <span>🏠</span> Back to Home
       </a>
+    </div>
+
+    <!-- Mobile Save Instructions Banner -->
+    <div id="mobileSaveInstruction" style="display: none; max-width: 500px; margin: 1.5rem auto 0; padding: 1rem 1.25rem; background-color: var(--primary-50); border: 1px solid var(--primary-200); border-radius: var(--radius-lg); text-align: left; box-shadow: var(--shadow-sm);" class="no-print">
+      <div style="font-weight: 700; color: var(--primary-900); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
+        <span>📱</span> To save your membership card:
+      </div>
+      <ul style="margin-left: 1.25rem; font-size: 0.9rem; color: var(--slate-700); line-height: 1.5;">
+        <li><strong>iPhone:</strong> Press and hold the image &rarr; <em>Save to Photos</em>.</li>
+        <li><strong>Android:</strong> Press and hold the image &rarr; <em>Download/Save image</em>.</li>
+      </ul>
     </div>
   </main>
 

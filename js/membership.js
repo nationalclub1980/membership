@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initLookupForm();
-  initDownloadButton();
+  initCardActionButtons();
 });
 
 /**
@@ -213,49 +213,184 @@ function initLookupForm() {
 }
 
 /**
- * Download Card as PNG Image or trigger Print
+ * Bind Save Card (PNG image) and Download PDF buttons
  */
-function initDownloadButton() {
-  const downloadBtn = document.getElementById('downloadCardBtn');
-  if (!downloadBtn) return;
+function initCardActionButtons() {
+  const saveBtn = document.getElementById('saveCardBtn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', saveMembershipCard);
+  }
 
-  downloadBtn.addEventListener('click', async () => {
-    const cardEl = document.getElementById('membershipCardElement');
-    if (!cardEl) {
-      showToast('Membership card element not found', 'danger');
-      return;
-    }
+  const pdfBtn = document.getElementById('downloadPdfBtn');
+  if (pdfBtn) {
+    pdfBtn.addEventListener('click', downloadPdfCard);
+  }
+}
 
-    if (!window.html2canvas) {
-      // Fallback: Trigger native browser print
-      window.print();
-      return;
-    }
+/**
+ * Primary Action: Save Membership Card as high-resolution PNG Image
+ * Native Mobile: Uses Web Share API (navigator.share) with File object when supported.
+ * Mobile Fallback: Opens image in a new tab with press-and-hold save instructions.
+ * Desktop Fallback: Triggers standard browser file download.
+ */
+async function saveMembershipCard() {
+  const cardEl = document.getElementById('membershipCardElement');
+  if (!cardEl) {
+    showToast('Membership card element not found', 'danger');
+    return;
+  }
 
-    showLoading('Generating high-resolution card image...');
-    try {
-      const canvas = await html2canvas(cardEl, {
-        scale: 3, // High DPI resolution for crisp print/image
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null
+  const memberIdText = (document.getElementById('displayMemberId')?.textContent || 'CARD').trim();
+  const fileName = `NASC-Membership-Card-${memberIdText}.png`;
+
+  showLoading('Generating high-resolution membership card image...');
+
+  try {
+    // Ensure card images (logo, photo) are fully loaded
+    const imgs = cardEl.querySelectorAll('img');
+    await Promise.all(Array.from(imgs).map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise(resolve => {
+        img.onload = resolve;
+        img.onerror = resolve;
       });
+    }));
 
-      const image = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = image;
+    const canvas = await html2canvas(cardEl, {
+      scale: 3, // High DPI resolution for crisp card image
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      logging: false
+    });
 
-      const memberIdText = document.getElementById('displayMemberId')?.textContent || 'Membership_Card';
-      link.download = `${memberIdText}_DigitalCard.png`;
-      link.click();
-
-      showToast('Membership card downloaded successfully!', 'success');
-    } catch (err) {
-      console.error('Download error:', err);
-      // Fallback to window.print if canvas fails
-      window.print();
-    } finally {
-      hideLoading();
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1.0));
+    if (!blob) {
+      throw new Error('Failed to create image Blob.');
     }
-  });
+
+    const file = new File([blob], fileName, { type: 'image/png' });
+
+    hideLoading();
+
+    // 1. Detect native Web Share API file sharing support
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({ files: [file] })
+    ) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: "National Arts & Sports Club Membership Card"
+        });
+        // Share sheet succeeded or passed to native app.
+        // Do not falsely display download success toast if cancelled.
+        return;
+      } catch (shareErr) {
+        if (shareErr.name === 'AbortError') {
+          // User cancelled the share dialog - do not show error
+          return;
+        }
+        console.warn('Native file share failed, using fallback:', shareErr);
+      }
+    }
+
+    // Detect if device is mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+    if (isMobile) {
+      // 2. Mobile Fallback: Create Object URL, open image in new tab, show hold-to-save instruction
+      const objectUrl = URL.createObjectURL(blob);
+      window.open(objectUrl, '_blank');
+
+      const instructionEl = document.getElementById('mobileSaveInstruction');
+      if (instructionEl) {
+        instructionEl.style.display = 'block';
+        instructionEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      showToast('Membership card opened. Press and hold the image to save it.', 'info');
+    } else {
+      // 3. Desktop Fallback: Programmatic download via <a download> link
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
+
+      showToast('Membership card is ready. Choose Save Image to save it to your phone.', 'info');
+    }
+
+  } catch (err) {
+    console.error('Save card error:', err);
+    hideLoading();
+    showToast('Could not generate membership card image. Please try Print / View Card.', 'danger');
+  }
+}
+
+/**
+ * Secondary Action: Download Membership Card as PDF document
+ * Uses html2canvas + jsPDF to generate printable PDF document.
+ */
+async function downloadPdfCard() {
+  const cardEl = document.getElementById('membershipCardElement');
+  if (!cardEl) {
+    showToast('Membership card element not found', 'danger');
+    return;
+  }
+
+  const memberIdText = (document.getElementById('displayMemberId')?.textContent || 'CARD').trim();
+  const fileName = `NASC-Membership-Card-${memberIdText}.pdf`;
+
+  showLoading('Generating printable PDF card...');
+
+  try {
+    const imgs = cardEl.querySelectorAll('img');
+    await Promise.all(Array.from(imgs).map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise(resolve => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+    }));
+
+    const canvas = await html2canvas(cardEl, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      logging: false
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf || {};
+
+    if (!jsPDF) {
+      hideLoading();
+      window.print();
+      return;
+    }
+
+    // Standard ID Card landscape dimensions (85.6mm x 54mm)
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: [85.6, 54]
+    });
+
+    pdf.addImage(imgData, 'PNG', 0, 0, 85.6, 54);
+    pdf.save(fileName);
+
+    hideLoading();
+    showToast('PDF membership card downloaded.', 'success');
+
+  } catch (err) {
+    console.error('PDF download error:', err);
+    hideLoading();
+    showToast('Could not generate PDF. Please try Print / View Card instead.', 'danger');
+  }
 }
