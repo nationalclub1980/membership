@@ -79,12 +79,16 @@ function doPost(e) {
     const payload = JSON.parse(e.postData.contents);
     const action = payload.action || '';
 
-    let responseData = { status: 'error', message: 'Invalid POST action' };
-
     if (action === 'register') {
       responseData = processRegistration(payload);
     } else if (action === 'updateStatus') {
       responseData = updateMemberStatus(payload);
+    } else if (action === 'deleteMember') {
+      responseData = deleteMemberRecord(payload);
+    } else if (action === 'bulkDelete') {
+      responseData = bulkDeleteMemberRecords(payload);
+    } else if (action === 'updateMember') {
+      responseData = updateMemberRecord(payload);
     }
 
     return buildJsonResponse(responseData);
@@ -327,6 +331,99 @@ function updateMemberStatus(payload) {
   }
 
   return { status: 'error', message: 'Member ID not found' };
+}
+
+/**
+ * Delete Single Member Record
+ */
+function deleteMemberRecord(payload) {
+  if (payload.pin !== CONFIG.ADMIN_PIN) {
+    return { status: 'error', message: 'Unauthorized access.' };
+  }
+
+  const sheet = getOrCreateSheet();
+  const values = sheet.getDataRange().getValues();
+  const targetId = String(payload.membershipId).trim().toLowerCase();
+
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]).trim().toLowerCase() === targetId) {
+      sheet.deleteRow(i + 1);
+      return { status: 'success', message: 'Member deleted successfully.' };
+    }
+  }
+
+  return { status: 'error', message: 'Member ID not found.' };
+}
+
+/**
+ * Bulk Delete Member Records
+ */
+function bulkDeleteMemberRecords(payload) {
+  if (payload.pin !== CONFIG.ADMIN_PIN) {
+    return { status: 'error', message: 'Unauthorized access.' };
+  }
+
+  if (!payload.ids || !Array.isArray(payload.ids) || payload.ids.length === 0) {
+    return { status: 'error', message: 'No member IDs specified for deletion.' };
+  }
+
+  const sheet = getOrCreateSheet();
+  const values = sheet.getDataRange().getValues();
+  const targetSet = new Set(payload.ids.map(id => String(id).trim().toLowerCase()));
+
+  let deletedCount = 0;
+  // Iterate backwards to prevent index shift during row deletion
+  for (let i = values.length - 1; i >= 1; i--) {
+    const rowId = String(values[i][0]).trim().toLowerCase();
+    if (targetSet.has(rowId)) {
+      sheet.deleteRow(i + 1);
+      deletedCount++;
+    }
+  }
+
+  return { 
+    status: 'success', 
+    message: `${deletedCount} member record(s) deleted successfully.`,
+    deletedCount: deletedCount
+  };
+}
+
+/**
+ * Update Full Member Record
+ */
+function updateMemberRecord(payload) {
+  if (payload.pin !== CONFIG.ADMIN_PIN) {
+    return { status: 'error', message: 'Unauthorized access.' };
+  }
+
+  const sheet = getOrCreateSheet();
+  const values = sheet.getDataRange().getValues();
+  const targetId = String(payload.membershipId).trim().toLowerCase();
+
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]).trim().toLowerCase() === targetId) {
+      const rowNum = i + 1;
+      const data = payload.memberData || {};
+      
+      if (data.fullName !== undefined) sheet.getRange(rowNum, 2).setValue(data.fullName);
+      if (data.dob !== undefined) sheet.getRange(rowNum, 4).setValue(data.dob);
+      if (data.gender !== undefined) sheet.getRange(rowNum, 5).setValue(data.gender);
+      if (data.phone !== undefined) sheet.getRange(rowNum, 6).setValue(data.phone);
+      if (data.whatsapp !== undefined) sheet.getRange(rowNum, 7).setValue(data.whatsapp);
+      if (data.email !== undefined) sheet.getRange(rowNum, 8).setValue(data.email);
+      if (data.address !== undefined) sheet.getRange(rowNum, 9).setValue(data.address);
+      if (data.district !== undefined) sheet.getRange(rowNum, 10).setValue(data.district);
+      if (data.state !== undefined) sheet.getRange(rowNum, 11).setValue(data.state);
+      if (data.pinCode !== undefined) sheet.getRange(rowNum, 12).setValue(data.pinCode);
+      if (data.bloodGroup !== undefined) sheet.getRange(rowNum, 13).setValue(data.bloodGroup);
+      if (data.membershipType !== undefined) sheet.getRange(rowNum, 14).setValue(data.membershipType);
+      if (data.status !== undefined) sheet.getRange(rowNum, 19).setValue(data.status);
+
+      return { status: 'success', message: 'Member record updated successfully.' };
+    }
+  }
+
+  return { status: 'error', message: 'Member ID not found.' };
 }
 
 /**

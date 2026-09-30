@@ -373,5 +373,34 @@ const DemoStore = {
       return true;
     }
     return false;
+  },
+
+  deleteMember(membershipId) {
+    let members = this.getMembers();
+    const initialLength = members.length;
+    members = members.filter(m => m.membershipId !== membershipId);
+    localStorage.setItem(this.KEY, JSON.stringify(members));
+    return members.length < initialLength;
+  },
+
+  bulkDeleteMembers(idsArray) {
+    if (!Array.isArray(idsArray) || idsArray.length === 0) return 0;
+    let members = this.getMembers();
+    const initialLength = members.length;
+    const idsSet = new Set(idsArray);
+    members = members.filter(m => !idsSet.has(m.membershipId));
+    localStorage.setItem(this.KEY, JSON.stringify(members));
+    return initialLength - members.length;
+  },
+
+  updateMember(membershipId, updatedData) {
+    const members = this.getMembers();
+    const idx = members.findIndex(m => m.membershipId === membershipId);
+    if (idx !== -1) {
+      members[idx] = { ...members[idx], ...updatedData };
+      localStorage.setItem(this.KEY, JSON.stringify(members));
+      return members[idx];
+    }
+    return null;
   }
 };

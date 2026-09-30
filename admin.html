@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Portal | NATIONAL ARTS & SPORTS CLUB</title>
+  <title>Admin Dashboard | NATIONAL ARTS & SPORTS CLUB</title>
   <meta name="description" content="Protected Membership Administration Dashboard for National Arts & Sports Club.">
   <link rel="icon" type="image/png" href="assets/club-logo.png">
   <link rel="stylesheet" href="css/style.css">
@@ -31,7 +31,7 @@
         <select class="lang-select lang-select-sm" aria-label="Select Language">
           <option value="en">English</option>
           <option value="ml">മലയാളം</option>
-          <option value="kn">കನ್ನಡ</option>
+          <option value="kn">ಕನ್ನಡ</option>
         </select>
       </div>
     </div>
@@ -54,37 +54,38 @@
         <li><a href="verify.html" class="nav-link" data-i18n="nav_verify">Verify Membership</a></li>
         <li><a href="about.html" class="nav-link" data-i18n="nav_about">About</a></li>
         <li><a href="contact.html" class="nav-link" data-i18n="nav_contact">Contact</a></li>
+        <li><a href="admin.html" class="nav-link active">Admin Portal</a></li>
       </ul>
     </div>
   </header>
 
   <!-- Admin App Root -->
-  <main class="container" id="adminApp" style="padding-top: 2.5rem; padding-bottom: 5rem;">
+  <main class="container" id="adminApp" style="padding-top: 2rem; padding-bottom: 5rem;">
 
-    <!-- 1. Authentication Section -->
+    <!-- 1. Authentication Section (PIN Entry) -->
     <section id="adminAuthSection" class="container-narrow" style="margin: 3rem auto;">
-      <div class="card-box text-center">
+      <div class="card-box text-center" style="max-width: 440px; margin: 0 auto;">
         <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
-        <h2 style="margin-bottom: 0.5rem;">Admin Authorization Required</h2>
-        <p style="color: var(--slate-600); margin-bottom: 1.5rem;">
-          Enter the administrator access passcode to manage membership records.
+        <h2 style="margin-bottom: 0.5rem; color: var(--slate-900);">Admin Authorization Required</h2>
+        <p style="color: var(--slate-600); margin-bottom: 1.5rem; font-size: 0.92rem;">
+          Access to member data is restricted to authorized club administrators only. Enter your passcode to unlock.
         </p>
 
-        <form id="adminLoginForm" style="max-width: 380px; margin: 0 auto;">
+        <form id="adminLoginForm" style="max-width: 340px; margin: 0 auto;">
           <div class="form-group" style="margin-bottom: 1.25rem;">
             <input 
               type="password" 
               id="adminPinInput" 
               class="form-control text-center" 
-              placeholder="Enter Admin PIN Passcode"
+              placeholder="Enter Admin Passcode"
               required
-              style="letter-spacing: 2px; font-size: 1.1rem;"
+              style="letter-spacing: 3px; font-size: 1.2rem; font-weight: 700;"
             >
-            <div class="form-hint" style="margin-top: 0.4rem;">Default PIN for testing: <code>admin123</code></div>
+            <div class="form-hint" style="margin-top: 0.5rem;">Default PIN for testing: <code>admin123</code></div>
           </div>
 
           <button type="submit" class="btn btn-primary btn-block">
-            Unlock Admin Dashboard
+            Unlock Admin Portal →
           </button>
         </form>
       </div>
@@ -93,19 +94,28 @@
     <!-- 2. Protected Dashboard Section (Hidden by default) -->
     <section id="adminDashboardSection" style="display: none;">
       
-      <!-- Top Bar -->
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+      <!-- Admin Sub-header & Navigation Tabs -->
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
         <div>
-          <h1 style="font-size: 2rem;">Membership Admin Dashboard</h1>
-          <p style="color: var(--slate-600);">Master Central Membership Database Management</p>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="badge badge-active" style="padding: 0.2rem 0.6rem;">ADMIN AUTHENTICATED</span>
+            <span style="font-size: 0.82rem; color: var(--slate-500);">National Arts & Sports Club Portal</span>
+          </div>
+          <h1 style="font-size: 1.85rem; margin-top: 0.25rem;">Administrator Management Dashboard</h1>
         </div>
 
-        <div style="display: flex; gap: 0.75rem;">
-          <button id="exportExcelBtn" class="btn btn-success">
-            <span>📊</span> Download Excel (.xlsx)
+        <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
+          <button id="exportExcelAllBtn" class="btn btn-success btn-sm">
+            📊 Export All Members (.xlsx)
           </button>
-          <button onclick="location.reload()" class="btn btn-secondary">
-            <span>🔄</span> Refresh
+          <button id="exportExcelFilteredBtn" class="btn btn-outline-primary btn-sm">
+            📥 Export Filtered (.xlsx)
+          </button>
+          <button onclick="fetchAdminData()" class="btn btn-secondary btn-sm" title="Refresh member list">
+            🔄 Refresh
+          </button>
+          <button id="adminLogoutBtn" class="btn btn-secondary btn-sm" style="color: var(--danger-600); border-color: var(--danger-500);">
+            🚪 Logout
           </button>
         </div>
       </div>
@@ -124,7 +134,15 @@
           <div class="stat-icon success">✅</div>
           <div>
             <div class="stat-num" id="statActiveMembers">0</div>
-            <div class="stat-label">Active Membership Cards</div>
+            <div class="stat-label">Active Members</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon warning">⏳</div>
+          <div>
+            <div class="stat-num" id="statPendingMembers">0</div>
+            <div class="stat-label">Pending Approval</div>
           </div>
         </div>
 
@@ -137,44 +155,93 @@
         </div>
       </div>
 
-      <!-- Filter Controls & Table Card -->
+      <!-- Bulk Selection Toolbar (Appears dynamically when checkboxes are checked) -->
+      <div id="bulkActionBar" style="display: none; background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius-md); padding: 0.85rem 1.25rem; margin-bottom: 1.25rem; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-weight: 700; color: #991b1b;" id="bulkSelectedCount">0 members selected</span>
+        </div>
+        <div style="display: flex; gap: 0.65rem;">
+          <button id="clearSelectionBtn" class="btn btn-secondary btn-sm">Deselect All</button>
+          <button id="bulkDeleteBtn" class="btn btn-gold btn-sm" style="background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff;">
+            🗑️ Delete Selected Members
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Controls & Table Card -->
       <div class="card-box" style="padding: 1.5rem;">
-        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+        
+        <!-- Search, Filter & Sorting Toolbar -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; align-items: center;">
           
-          <!-- Search input -->
-          <div style="flex-grow: 1; min-width: 260px;">
+          <!-- 1. Search Members -->
+          <div style="grid-column: span 2;">
+            <label class="form-label" style="font-size: 0.8rem;">Search Members</label>
             <input 
               type="text" 
               id="adminSearchInput" 
               class="form-control" 
-              placeholder="🔍 Search by Member ID, Full Name, or Phone..."
+              placeholder="🔍 Search by Name, Member ID, Phone, Email, Address..."
             >
           </div>
 
-          <!-- Status Filter -->
-          <div style="width: 200px;">
+          <!-- 2. Status Filter -->
+          <div>
+            <label class="form-label" style="font-size: 0.8rem;">Membership Status</label>
             <select id="adminStatusFilter" class="form-control">
-              <option value="all">All Membership Status</option>
-              <option value="active">Active Members</option>
-              <option value="expired">Expired Members</option>
-              <option value="suspended">Suspended Members</option>
+              <option value="all">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="pending">Pending</option>
+              <option value="expired">Expired</option>
+              <option value="suspended">Suspended</option>
             </select>
           </div>
+
+          <!-- 3. Membership Type Filter -->
+          <div>
+            <label class="form-label" style="font-size: 0.8rem;">Membership Type</label>
+            <select id="adminTypeFilter" class="form-control">
+              <option value="all">All Membership Types</option>
+              <option value="standard">Standard</option>
+              <option value="premium">Premium</option>
+              <option value="lifetime">Lifetime</option>
+              <option value="youth">Youth</option>
+            </select>
+          </div>
+
+          <!-- 4. Sorting Control -->
+          <div>
+            <label class="form-label" style="font-size: 0.8rem;">Sort By</label>
+            <select id="adminSortSelect" class="form-control">
+              <option value="newest">Registration Date (Newest First)</option>
+              <option value="oldest">Registration Date (Oldest First)</option>
+              <option value="name_asc">Member Name (A - Z)</option>
+              <option value="name_desc">Member Name (Z - A)</option>
+              <option value="id_asc">Membership ID (Ascending)</option>
+              <option value="status">Status</option>
+            </select>
+          </div>
+
         </div>
 
-        <!-- Master Data Table -->
+        <!-- Master Responsive Data Table -->
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Membership ID</th>
-                <th>Member Name</th>
+                <th style="width: 40px; text-align: center;">
+                  <input type="checkbox" id="selectAllCheckbox" aria-label="Select all members">
+                </th>
+                <th>Member ID</th>
+                <th>Photo</th>
+                <th>Full Name</th>
                 <th>Phone</th>
+                <th>Email</th>
                 <th>Type</th>
-                <th>Membership Tier</th>
                 <th>Joining Date</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Photo Link</th>
+                <th style="text-align: right;">Actions</th>
               </tr>
             </thead>
             <tbody id="adminMembersTbody">
@@ -188,9 +255,9 @@
 
   </main>
 
-  <!-- Admin Modal Popup -->
+  <!-- Admin Dynamic Modal Popup -->
   <div class="modal-backdrop" id="adminModal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 650px;">
       <button class="modal-close" onclick="closeAdminModal()">✕</button>
       <div id="adminModalBody"></div>
     </div>
