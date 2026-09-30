@@ -870,8 +870,8 @@ textarea.form-control {
 }
 
 .export-digital-card .card-org-logo {
-  width: 84px !important;
-  height: 84px !important;
+  width: 110px !important;
+  height: 110px !important;
   border-radius: 0 !important;
   background: transparent !important;
   padding: 0 !important;
@@ -1072,8 +1072,8 @@ textarea.form-control {
 
 
 .card-org-logo {
-  width: 52px;
-  height: 52px;
+  width: 72px;
+  height: 72px;
   border-radius: 0;
   background: transparent;
   padding: 0;
