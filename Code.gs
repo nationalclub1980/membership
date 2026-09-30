@@ -77,24 +77,26 @@ function doPost(e) {
     }
 
     const payload = JSON.parse(e.postData.contents);
-    const action = payload.action || '';
+    const action = String(payload.action || '').trim();
+
+    let responseData = { status: 'error', success: false, message: 'Invalid POST action' };
 
     if (action === 'register') {
       responseData = processRegistration(payload);
-    } else if (action === 'updateStatus') {
+    } else if (action === 'updateStatus' || action === 'status') {
       responseData = updateMemberStatus(payload);
-    } else if (action === 'deleteMember') {
+    } else if (action === 'deleteMember' || action === 'delete' || action === 'delete_member') {
       responseData = deleteMemberRecord(payload);
-    } else if (action === 'bulkDelete') {
+    } else if (action === 'bulkDelete' || action === 'deleteMembers' || action === 'bulk_delete') {
       responseData = bulkDeleteMemberRecords(payload);
-    } else if (action === 'updateMember') {
+    } else if (action === 'updateMember' || action === 'editMember') {
       responseData = updateMemberRecord(payload);
     }
 
     return buildJsonResponse(responseData);
 
   } catch (error) {
-    return buildJsonResponse({ status: 'error', message: error.toString() });
+    return buildJsonResponse({ status: 'error', success: false, message: error.toString() });
   } finally {
     lock.releaseLock();
   }
@@ -338,21 +340,25 @@ function updateMemberStatus(payload) {
  */
 function deleteMemberRecord(payload) {
   if (payload.pin !== CONFIG.ADMIN_PIN) {
-    return { status: 'error', message: 'Unauthorized access.' };
+    return { status: 'error', success: false, message: 'Unauthorized access.' };
+  }
+
+  const targetId = String(payload.membershipId || payload.memberId || payload.id || '').trim().toLowerCase();
+  if (!targetId) {
+    return { status: 'error', success: false, message: 'Member ID missing' };
   }
 
   const sheet = getOrCreateSheet();
   const values = sheet.getDataRange().getValues();
-  const targetId = String(payload.membershipId).trim().toLowerCase();
 
   for (let i = 1; i < values.length; i++) {
     if (String(values[i][0]).trim().toLowerCase() === targetId) {
       sheet.deleteRow(i + 1);
-      return { status: 'success', message: 'Member deleted successfully.' };
+      return { status: 'success', success: true, message: 'Member deleted successfully.' };
     }
   }
 
-  return { status: 'error', message: 'Member ID not found.' };
+  return { status: 'error', success: false, message: 'Member ID not found.' };
 }
 
 /**
@@ -360,16 +366,17 @@ function deleteMemberRecord(payload) {
  */
 function bulkDeleteMemberRecords(payload) {
   if (payload.pin !== CONFIG.ADMIN_PIN) {
-    return { status: 'error', message: 'Unauthorized access.' };
+    return { status: 'error', success: false, message: 'Unauthorized access.' };
   }
 
-  if (!payload.ids || !Array.isArray(payload.ids) || payload.ids.length === 0) {
-    return { status: 'error', message: 'No member IDs specified for deletion.' };
+  const rawIds = payload.ids || payload.memberIds || payload.membershipIds || [];
+  if (!Array.isArray(rawIds) || rawIds.length === 0) {
+    return { status: 'error', success: false, message: 'No member IDs specified for deletion.' };
   }
 
   const sheet = getOrCreateSheet();
   const values = sheet.getDataRange().getValues();
-  const targetSet = new Set(payload.ids.map(id => String(id).trim().toLowerCase()));
+  const targetSet = new Set(rawIds.map(id => String(id).trim().toLowerCase()));
 
   let deletedCount = 0;
   // Iterate backwards to prevent index shift during row deletion
@@ -383,6 +390,7 @@ function bulkDeleteMemberRecords(payload) {
 
   return { 
     status: 'success', 
+    success: true,
     message: `${deletedCount} member record(s) deleted successfully.`,
     deletedCount: deletedCount
   };

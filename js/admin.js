@@ -417,40 +417,62 @@ async function executeDeleteSingleMember(membershipId) {
         body: JSON.stringify({
           action: 'deleteMember',
           pin: currentAdminPin,
-          membershipId: membershipId
+          membershipId: membershipId,
+          memberId: membershipId
         })
       });
-      const result = await resp.json();
-      if (result.status !== 'success') {
-        if (result.message && result.message.includes('Invalid POST action')) {
-          // Fallback for legacy Apps Script deployment: update status to Expired/Deleted
-          await fetch(CONFIG.WEB_APP_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-              action: 'updateStatus',
-              pin: currentAdminPin,
-              membershipId: membershipId,
-              status: 'Expired'
-            })
-          });
-          allAdminMembers = allAdminMembers.filter(m => m.membershipId !== membershipId);
-          selectedMemberIds.delete(membershipId);
-          showToast('Member removed from dashboard (Update Apps Script deployment for permanent Sheet row deletion).', 'warning');
-          applyAdminFilters();
-          return;
-        }
-        throw new Error(result.message || 'Deletion failed.');
+
+      let result = null;
+      try {
+        result = await resp.json();
+      } catch (e) {
+        console.error('Non-JSON response received from Google Apps Script backend:', e);
       }
+
+      console.log('Delete Member Network Response:', result);
+
+      if (result && (result.status === 'success' || result.success === true)) {
+        allAdminMembers = allAdminMembers.filter(m => m.membershipId !== membershipId);
+        selectedMemberIds.delete(membershipId);
+        showToast(result.message || 'Member deleted successfully.', 'success');
+        updateBulkSelectionUI();
+        applyAdminFilters();
+        return;
+      }
+
+      const errMsg = result ? (result.message || result.error || '') : '';
+      if (errMsg.includes('Invalid POST action')) {
+        console.warn('Backend Apps Script deployment returned Invalid POST action. Executing legacy status fallback...');
+        await fetch(CONFIG.WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'updateStatus',
+            pin: currentAdminPin,
+            membershipId: membershipId,
+            status: 'Expired'
+          })
+        });
+
+        allAdminMembers = allAdminMembers.filter(m => m.membershipId !== membershipId);
+        selectedMemberIds.delete(membershipId);
+        showToast('Member removed from dashboard (Update Apps Script deployment for permanent Sheet row deletion).', 'warning');
+        updateBulkSelectionUI();
+        applyAdminFilters();
+        return;
+      }
+
+      throw new Error(errMsg || 'Failed to delete member record.');
     } else {
       DemoStore.deleteMember(membershipId);
+      allAdminMembers = allAdminMembers.filter(m => m.membershipId !== membershipId);
+      selectedMemberIds.delete(membershipId);
+      showToast('Member deleted successfully.', 'success');
+      updateBulkSelectionUI();
+      applyAdminFilters();
     }
-
-    allAdminMembers = allAdminMembers.filter(m => m.membershipId !== membershipId);
-    selectedMemberIds.delete(membershipId);
-    showToast('Member deleted successfully.', 'success');
-    applyAdminFilters();
   } catch (err) {
+    console.error('Delete Member Error:', err);
     showToast(`Error: ${err.message || 'Member could not be deleted.'}`, 'danger');
   } finally {
     hideLoading();
@@ -507,45 +529,68 @@ async function executeBulkDelete() {
         body: JSON.stringify({
           action: 'bulkDelete',
           pin: currentAdminPin,
-          ids: idsArray
+          ids: idsArray,
+          memberIds: idsArray
         })
       });
-      const result = await resp.json();
-      if (result.status !== 'success') {
-        if (result.message && result.message.includes('Invalid POST action')) {
-          // Fallback: update status to Expired for each selected record
-          for (const id of idsArray) {
-            await fetch(CONFIG.WEB_APP_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              body: JSON.stringify({
-                action: 'updateStatus',
-                pin: currentAdminPin,
-                membershipId: id,
-                status: 'Expired'
-              })
-            });
-          }
-          const idsSet = new Set(idsArray);
-          allAdminMembers = allAdminMembers.filter(m => !idsSet.has(m.membershipId));
-          selectedMemberIds.clear();
-          showToast(`${idsArray.length} members removed from dashboard (Update Apps Script deployment for permanent Sheet row deletion).`, 'warning');
-          applyAdminFilters();
-          return;
-        }
-        throw new Error(result.message || 'Bulk deletion failed.');
+
+      let result = null;
+      try {
+        result = await resp.json();
+      } catch (e) {
+        console.error('Non-JSON response received from Google Apps Script backend:', e);
       }
+
+      console.log('Bulk Delete Network Response:', result);
+
+      if (result && (result.status === 'success' || result.success === true)) {
+        const idsSet = new Set(idsArray);
+        allAdminMembers = allAdminMembers.filter(m => !idsSet.has(m.membershipId));
+        selectedMemberIds.clear();
+        showToast(result.message || `${idsArray.length} member records deleted successfully.`, 'success');
+        updateBulkSelectionUI();
+        applyAdminFilters();
+        return;
+      }
+
+      const errMsg = result ? (result.message || result.error || '') : '';
+      if (errMsg.includes('Invalid POST action')) {
+        console.warn('Backend Apps Script deployment returned Invalid POST action. Executing legacy status fallback for bulk items...');
+        for (const id of idsArray) {
+          await fetch(CONFIG.WEB_APP_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'updateStatus',
+              pin: currentAdminPin,
+              membershipId: id,
+              status: 'Expired'
+            })
+          });
+        }
+
+        const idsSet = new Set(idsArray);
+        allAdminMembers = allAdminMembers.filter(m => !idsSet.has(m.membershipId));
+        selectedMemberIds.clear();
+        showToast(`${idsArray.length} member records removed from dashboard (Update Apps Script deployment for permanent Sheet row deletion).`, 'warning');
+        updateBulkSelectionUI();
+        applyAdminFilters();
+        return;
+      }
+
+      throw new Error(errMsg || 'Failed to bulk delete member records.');
     } else {
       DemoStore.bulkDeleteMembers(idsArray);
+      const idsSet = new Set(idsArray);
+      allAdminMembers = allAdminMembers.filter(m => !idsSet.has(m.membershipId));
+      selectedMemberIds.clear();
+      showToast(`${idsArray.length} member records deleted successfully.`, 'success');
+      updateBulkSelectionUI();
+      applyAdminFilters();
     }
-
-    const idsSet = new Set(idsArray);
-    allAdminMembers = allAdminMembers.filter(m => !idsSet.has(m.membershipId));
-    selectedMemberIds.clear();
-    showToast(`${idsArray.length} members deleted successfully.`, 'success');
-    applyAdminFilters();
   } catch (err) {
-    showToast(`Error: ${err.message || 'Bulk deletion failed.'}`, 'danger');
+    console.error('Bulk Delete Error:', err);
+    showToast(`Error: ${err.message || 'Bulk delete failed.'}`, 'danger');
   } finally {
     hideLoading();
   }
