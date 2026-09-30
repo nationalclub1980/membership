@@ -21,7 +21,7 @@ const CONFIG = {
   ORG_INSTAGRAM: "@national_millathnagar_udmawest",
   ORG_INSTAGRAM_URL: "https://www.instagram.com/national_millathnagar_udmawest",
 
-  // Executive Committee Leadership
+  // Club Leadership
   PRESIDENT_NAME: "Abdulla PK",
   PRESIDENT_PHONE: "+91 87142 10696",
   SECRETARY_NAME: "Mujeeb Rahman Kaniyil",
