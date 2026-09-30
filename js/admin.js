@@ -208,7 +208,7 @@ function renderAdminDashboard(members) {
         <td>
           <div style="display: flex; flex-direction: column; gap: 0.15rem;">
             <span class="badge ${regTypeBadgeClass}">${regType}</span>
-            <span style="font-size: 0.75rem; color: var(--slate-500);">${escapeHtml(m.membershipType || 'Standard')}</span>
+            <span style="font-size: 0.75rem; color: var(--slate-500);">${escapeHtml(m.membershipType || 'Adult Membership')}</span>
           </div>
         </td>
         <td><span style="font-size: 0.85rem; color: var(--slate-600);">${formatDate(m.joiningDate)}</span></td>
@@ -320,7 +320,7 @@ function applyAdminFilters() {
       (m.address && m.address.toLowerCase().includes(q));
 
     const matchStatus = st === 'all' || (m.status || 'active').toLowerCase() === st;
-    const matchType = tp === 'all' || (m.membershipType || 'standard').toLowerCase() === tp;
+    const matchType = tp === 'all' || (m.membershipType || 'adult').toLowerCase().includes(tp);
 
     return matchSearch && matchStatus && matchType;
   });
@@ -624,7 +624,7 @@ function exportToExcel(targetMembers, label = 'Export') {
       "State": m.state || '',
       "PIN Code": m.pinCode || '',
       "Blood Group": m.bloodGroup || '',
-      "Membership Type": m.membershipType || 'Standard',
+      "Membership Type": m.membershipType || 'Adult Membership',
       "Joining Date": m.joiningDate || '',
       "Valid From": m.validFrom || '',
       "Valid Until": m.validUntil || '',
@@ -770,7 +770,7 @@ function viewMemberDetailsModal(membershipId) {
 
         <div>
           <div class="verify-detail-label">Membership Type</div>
-          <div style="font-weight: 600;">${escapeHtml(member.membershipType || 'Standard')} (${escapeHtml(member.registrationType || 'New Member')})</div>
+          <div style="font-weight: 600;">${escapeHtml(member.membershipType || 'Adult Membership')} (${escapeHtml(member.registrationType || 'New Member')})</div>
         </div>
 
         <div>
@@ -838,10 +838,10 @@ function openEditMemberModal(membershipId) {
         <div class="form-group form-group-third">
           <label class="form-label">Membership Type</label>
           <select id="editMembershipType" class="form-control">
-            <option value="Standard" ${member.membershipType === 'Standard' ? 'selected' : ''}>Standard</option>
-            <option value="Premium" ${member.membershipType === 'Premium' ? 'selected' : ''}>Premium</option>
-            <option value="Lifetime" ${member.membershipType === 'Lifetime' ? 'selected' : ''}>Lifetime</option>
-            <option value="Youth" ${member.membershipType === 'Youth' ? 'selected' : ''}>Youth</option>
+            <option value="Child Membership" ${member.membershipType === 'Child Membership' ? 'selected' : ''}>Child Membership (Up to 15 Years)</option>
+            <option value="Youth Membership" ${member.membershipType === 'Youth Membership' ? 'selected' : ''}>Youth Membership (16–20 Years)</option>
+            <option value="Adult Membership" ${member.membershipType === 'Adult Membership' || !member.membershipType ? 'selected' : ''}>Adult Membership (21+ Years)</option>
+            <option value="Overseas / Pravasi Membership" ${member.membershipType === 'Overseas / Pravasi Membership' ? 'selected' : ''}>Overseas / Pravasi Membership</option>
           </select>
         </div>
 

@@ -150,7 +150,7 @@ function processRegistration(data) {
     data.state || '',
     data.pinCode || '',
     data.bloodGroup || '',
-    data.membershipType || 'Standard',
+    data.membershipType || 'Adult Membership',
     formatDate(joiningDate),
     validFrom,
     validUntil,

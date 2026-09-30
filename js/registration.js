@@ -12,13 +12,28 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
+  * Calculate Age from Date of Birth String
+  */
+function calculateAge(dobString) {
+  if (!dobString) return 0;
+  const dob = new Date(dobString);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+/**
  * Populate Membership Types and default dates
  */
 function initFormDefaults() {
   const typeSelect = document.getElementById('membershipType');
   if (typeSelect && CONFIG.MEMBERSHIP_TYPES) {
     typeSelect.innerHTML = CONFIG.MEMBERSHIP_TYPES.map(t => 
-      `<option value="${t.id}">${t.name} (${t.fee})</option>`
+      `<option value="${t.id}">${t.name} — ${t.fee}</option>`
     ).join('');
   }
 
@@ -32,6 +47,26 @@ function initFormDefaults() {
   if (dobInput) {
     const today = new Date().toISOString().split('T')[0];
     dobInput.setAttribute('max', today);
+
+    // Auto-suggest membership tier based on DOB age if user has not picked Overseas / Pravasi Membership
+    dobInput.addEventListener('change', () => {
+      const dobVal = dobInput.value;
+      if (!dobVal || !typeSelect) return;
+      const age = calculateAge(dobVal);
+      const currentSelected = typeSelect.value || '';
+      
+      if (currentSelected.includes('Overseas') || currentSelected.includes('Pravasi')) {
+        return; // Retain Overseas selection
+      }
+
+      if (age <= 15) {
+        typeSelect.value = "Child Membership";
+      } else if (age >= 16 && age <= 20) {
+        typeSelect.value = "Youth Membership";
+      } else {
+        typeSelect.value = "Adult Membership";
+      }
+    });
   }
 
   const termsCheckbox = document.getElementById('termsAccepted');
@@ -165,6 +200,28 @@ function initFormValidation(form) {
       markInvalid('dob');
       showToast('Date of Birth cannot be in the future', 'danger');
       isValid = false;
+    }
+
+    // Age & Membership Category Consistency Validation
+    if (dob && dob <= todayStr && membershipType) {
+      const age = calculateAge(dob);
+      const isOverseas = membershipType.includes('Overseas') || membershipType.includes('Pravasi');
+
+      if (!isOverseas) {
+        if (membershipType.includes('Child') && age > 15) {
+          markInvalid('membershipType');
+          showToast(`Child Membership is for applicants up to 15 years old. Applicant is ${age} years old.`, 'danger');
+          isValid = false;
+        } else if (membershipType.includes('Youth') && (age < 16 || age > 20)) {
+          markInvalid('membershipType');
+          showToast(`Youth Membership is for applicants between 16 and 20 years old. Applicant is ${age} years old.`, 'danger');
+          isValid = false;
+        } else if (membershipType.includes('Adult') && age < 21) {
+          markInvalid('membershipType');
+          showToast(`Adult Membership is for applicants 21 years and older. Applicant is ${age} years old.`, 'danger');
+          isValid = false;
+        }
+      }
     }
 
     if (!gender) { markInvalid('gender'); isValid = false; }

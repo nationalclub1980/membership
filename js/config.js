@@ -38,10 +38,10 @@ const CONFIG = {
 
   // 5. Membership Types Available
   MEMBERSHIP_TYPES: [
-    { id: "Standard", name: "Standard Member", fee: "$25 / year", badgeBg: "linear-gradient(135deg, #3b82f6, #1d4ed8)" },
-    { id: "Premium", name: "Premium Member", fee: "$50 / year", badgeBg: "linear-gradient(135deg, #f59e0b, #d97706)" },
-    { id: "Executive", name: "Executive Member", fee: "$100 / year", badgeBg: "linear-gradient(135deg, #8b5cf6, #6d28d9)" },
-    { id: "Lifetime", name: "Lifetime Member", fee: "$500 one-time", badgeBg: "linear-gradient(135deg, #10b981, #047857)" }
+    { id: "Child Membership", name: "Child Membership (Up to 15 Years)", fee: "₹100 / Year", badgeBg: "linear-gradient(135deg, #0ea5e9, #0284c7)" },
+    { id: "Youth Membership", name: "Youth Membership (16–20 Years)", fee: "₹300 / Year", badgeBg: "linear-gradient(135deg, #3b82f6, #1d4ed8)" },
+    { id: "Adult Membership", name: "Adult Membership (21+ Years)", fee: "₹600 / Year", badgeBg: "linear-gradient(135deg, #10b981, #047857)" },
+    { id: "Overseas / Pravasi Membership", name: "Overseas / Pravasi Membership", fee: "₹1,000 / Year", badgeBg: "linear-gradient(135deg, #8b5cf6, #6d28d9)" }
   ],
 
   // 6. Local Offline Demo Passcode (Used ONLY when WEB_APP_URL is unconfigured for local testing)

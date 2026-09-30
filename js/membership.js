@@ -110,7 +110,7 @@ function renderDigitalCard(member) {
   // Escaped member fields for XSS security
   const safeName = escapeHtml(member.fullName);
   const safeId = escapeHtml(member.membershipId);
-  const safeType = escapeHtml(member.membershipType || 'Standard');
+  const safeType = escapeHtml(member.membershipType || 'Adult Membership');
   const safeNationality = escapeHtml(member.nationality || 'Indian');
   const safeCountry = escapeHtml(formatCountryDisplay(member.residenceCountry || member.country));
   const safeStatus = escapeHtml(member.status || 'Active');

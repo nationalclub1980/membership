@@ -124,7 +124,7 @@ function renderVerificationSuccess(data) {
         </div>
         <div class="verify-detail-item">
           <div class="verify-detail-label">MEMBERSHIP TYPE</div>
-          <div class="verify-detail-val">${data.membershipType || 'Standard'}</div>
+          <div class="verify-detail-val">${data.membershipType || 'Adult Membership'}</div>
         </div>
         <div class="verify-detail-item">
           <div class="verify-detail-label">MEMBERSHIP STATUS</div>
