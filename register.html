@@ -229,6 +229,33 @@
           </div>
         </div>
 
+        <!-- Membership Declaration (അംഗത്വ സത്യപ്രസ്താവന) -->
+        <div class="declaration-container" style="margin-top: 2rem;">
+          <div class="declaration-card" style="background: var(--primary-50); border: 1px solid var(--primary-200); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--primary-900); font-weight: 700; margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+              <span>📜</span> അംഗത്വ സത്യപ്രസ്താവന
+            </h3>
+            <div class="declaration-text" style="font-size: 0.92rem; color: var(--slate-700); line-height: 1.75; display: flex; flex-direction: column; gap: 0.75rem;">
+              <p>ഞാൻ നാഷണൽ ആർട്സ് ആൻഡ് സ്പോർട്സ് ക്ലബ്ബിന്റെ അംഗത്വം സ്വീകരിക്കുന്നതോടൊപ്പം ക്ലബ്ബിന്റെ ലക്ഷ്യങ്ങളും നിയമാവലിയും പൂർണ്ണമായി അംഗീകരിക്കുന്നു.</p>
+              <p>ക്ലബ്ബിന്റെ അച്ചടക്കം, തീരുമാനങ്ങൾ, പ്രവർത്തനങ്ങൾ എന്നിവയിൽ ആത്മാർത്ഥമായി സഹകരിക്കുകയും, എല്ലാ അംഗങ്ങളോടും സൗഹാർദ്ദത്തോടെയും ബഹുമാനത്തോടെയും പെരുമാറുകയും ചെയ്യും.</p>
+              <p>ക്ലബ്ബിന്റെ സ്വത്തുക്കളും സൗകര്യങ്ങളും ഉത്തരവാദിത്വത്തോടെ സംരക്ഷിക്കുകയും, ക്ലബ്ബിന്റെ പേരിനോ പ്രതിച്ഛായയ്ക്കോ ഹാനികരമായ യാതൊരു പ്രവർത്തനത്തിലും ഏർപ്പെടുകയില്ലെന്നും ഞാൻ സത്യസന്ധമായി പ്രഖ്യാപിക്കുന്നു.</p>
+              <p>ക്ലബ്ബിന്റെ നിയമാവലി ലംഘിക്കുന്ന പക്ഷം ഭരണസമിതി സ്വീകരിക്കുന്ന ഉചിതമായ നടപടികൾ അംഗീകരിക്കുമെന്നും ഇതിനാൽ സത്യപ്രസ്താവന ചെയ്യുന്നു.</p>
+            </div>
+          </div>
+
+          <div class="form-group declaration-checkbox-group" style="margin-bottom: 0;">
+            <div style="display: flex; align-items: flex-start; gap: 0.75rem; background: var(--surface-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem 1.25rem;">
+              <input type="checkbox" id="termsAccepted" name="termsAccepted" required style="width: 22px; height: 22px; margin-top: 2px; accent-color: var(--primary-600); cursor: pointer; flex-shrink: 0;">
+              <label for="termsAccepted" style="font-size: 0.95rem; font-weight: 600; color: var(--slate-800); line-height: 1.5; cursor: pointer; user-select: none;">
+                മുകളിലുള്ള അംഗത്വ സത്യപ്രസ്താവനയും നിബന്ധനകളും ഞാൻ വായിക്കുകയും അംഗീകരിക്കുകയും ചെയ്യുന്നു. <span class="required-asterisk">*</span>
+              </label>
+            </div>
+            <div id="termsInvalidFeedback" class="invalid-feedback" style="display: none; color: var(--danger-600); font-size: 0.88rem; font-weight: 600; margin-top: 0.5rem; padding-left: 0.25rem;">
+              അംഗത്വ സത്യപ്രസ്താവന അംഗീകരിച്ച ശേഷം മാത്രം അപേക്ഷ സമർപ്പിക്കാവുന്നതാണ്.
+            </div>
+          </div>
+        </div>
+
         <div style="margin-top: 2.5rem; text-align: center;">
           <button type="submit" id="submitBtn" class="btn btn-primary btn-lg btn-block">
             <span>✨</span> Submit Registration & Generate Digital Card

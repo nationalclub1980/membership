@@ -132,6 +132,8 @@ function processRegistration(data) {
   const registrationType = data.registrationType || "New Member";
   const nationality = data.nationality || "Indian";
   const residenceCountry = data.residenceCountry || "India";
+  const termsAccepted = data.termsAccepted !== false;
+  const termsAcceptedAt = data.termsAcceptedAt || timestamp;
 
   // Row columns matching exact database schema
   const rowData = [
@@ -157,7 +159,9 @@ function processRegistration(data) {
     cardUrl,
     registrationType,
     nationality,
-    residenceCountry
+    residenceCountry,
+    termsAccepted ? "Yes" : "No",
+    termsAcceptedAt
   ];
 
   sheet.appendRow(rowData);
@@ -185,7 +189,9 @@ function processRegistration(data) {
     registrationTimestamp: timestamp,
     status: status,
     cardUrl: cardUrl,
-    registrationType: registrationType
+    registrationType: registrationType,
+    termsAccepted: termsAccepted,
+    termsAcceptedAt: termsAcceptedAt
   };
 
   return {
@@ -522,7 +528,7 @@ function getOrCreateSheet() {
       "Membership ID", "Full Name", "Photo URL", "Date of Birth", "Gender", 
       "Phone", "WhatsApp", "Email", "Address", "District", "State", 
       "PIN Code", "Blood Group", "Membership Type", "Joining Date", 
-      "Valid From", "Valid Until", "Registration Timestamp", "Membership Status", "Membership Card URL", "Registration Type", "Nationality", "Country of Residence"
+      "Valid From", "Valid Until", "Registration Timestamp", "Membership Status", "Membership Card URL", "Registration Type", "Nationality", "Country of Residence", "Terms Accepted", "Terms Accepted At"
     ];
     sheet.appendRow(headers);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#3b82f6").setFontColor("#ffffff");

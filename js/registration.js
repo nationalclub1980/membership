@@ -33,6 +33,17 @@ function initFormDefaults() {
     const today = new Date().toISOString().split('T')[0];
     dobInput.setAttribute('max', today);
   }
+
+  const termsCheckbox = document.getElementById('termsAccepted');
+  const termsFeedback = document.getElementById('termsInvalidFeedback');
+  if (termsCheckbox) {
+    termsCheckbox.addEventListener('change', () => {
+      if (termsCheckbox.checked) {
+        termsCheckbox.classList.remove('is-invalid');
+        if (termsFeedback) termsFeedback.style.display = 'none';
+      }
+    });
+  }
 }
 
 /**
@@ -186,6 +197,21 @@ function initFormValidation(form) {
     if (!state) { markInvalid('state'); isValid = false; }
     if (!pinCode) { markInvalid('pinCode'); isValid = false; }
 
+    // Terms & Conditions Declaration Check
+    const termsCheckbox = document.getElementById('termsAccepted');
+    const termsFeedback = document.getElementById('termsInvalidFeedback');
+    const termsAccepted = termsCheckbox ? termsCheckbox.checked : false;
+
+    if (!termsAccepted) {
+      if (termsCheckbox) termsCheckbox.classList.add('is-invalid');
+      if (termsFeedback) termsFeedback.style.display = 'block';
+      showToast('അംഗത്വ സത്യപ്രസ്താവന അംഗീകരിച്ച ശേഷം മാത്രം അപേക്ഷ സമർപ്പിക്കാവുന്നതാണ്.', 'danger');
+      isValid = false;
+    } else {
+      if (termsCheckbox) termsCheckbox.classList.remove('is-invalid');
+      if (termsFeedback) termsFeedback.style.display = 'none';
+    }
+
     // Photo check
     if (!uploadedPhotoBase64) {
       showToast('Please upload a profile photo before submitting', 'danger');
@@ -193,12 +219,15 @@ function initFormValidation(form) {
     }
 
     if (!isValid) {
-      showToast('Please fill out all required fields correctly', 'danger');
+      if (termsAccepted) {
+        showToast('Please fill out all required fields correctly', 'danger');
+      }
       return;
     }
 
     // Detect registration type (New Member vs Renewal)
     const registrationType = form.dataset.registrationType || 'New Member';
+    const termsAcceptedAt = new Date().toISOString();
 
     // Prepare payload
     const payload = {
@@ -219,7 +248,9 @@ function initFormValidation(form) {
       pinCode,
       bloodGroup,
       membershipType,
-      joiningDate
+      joiningDate,
+      termsAccepted: true,
+      termsAcceptedAt: termsAcceptedAt
     };
 
     // Disable button to prevent duplicate submissions
@@ -246,6 +277,8 @@ function initFormValidation(form) {
           registeredMember.nationality = registeredMember.nationality || nationality;
           registeredMember.residenceCountry = registeredMember.residenceCountry || residenceCountry;
           registeredMember.country = registeredMember.residenceCountry;
+          registeredMember.termsAccepted = true;
+          registeredMember.termsAcceptedAt = termsAcceptedAt;
           if (uploadedPhotoBase64) {
             registeredMember.photoBase64 = uploadedPhotoBase64;
           }
@@ -272,7 +305,9 @@ function initFormValidation(form) {
           pinCode,
           bloodGroup,
           membershipType,
-          joiningDate
+          joiningDate,
+          termsAccepted: true,
+          termsAcceptedAt: termsAcceptedAt
         });
       }
 

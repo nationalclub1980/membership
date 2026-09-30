@@ -345,6 +345,8 @@ const DemoStore = {
       validFrom: formatDate(validFromDate),
       validUntil: formatDate(validUntilDate),
       registrationTimestamp: new Date().toISOString(),
+      termsAccepted: memberData.termsAccepted !== undefined ? memberData.termsAccepted : true,
+      termsAcceptedAt: memberData.termsAcceptedAt || new Date().toISOString(),
       status: "Active",
       cardUrl: ""
     };
