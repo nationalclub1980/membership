@@ -804,6 +804,246 @@ textarea.form-control {
   pointer-events: none;
 }
 
+/* Dedicated Fixed-Size Export Card (Off-Screen for Crisp PVC 856x540 Output) */
+.export-card-wrapper {
+  position: fixed !important;
+  left: -10000px !important;
+  top: 0 !important;
+  width: 856px !important;
+  height: 540px !important;
+  z-index: -9999 !important;
+  pointer-events: none !important;
+  visibility: visible !important;
+  overflow: visible !important;
+}
+
+.export-digital-card {
+  width: 856px !important;
+  height: 540px !important;
+  box-sizing: border-box !important;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%) !important;
+  border-radius: 28px !important;
+  padding: 1.8rem 2.2rem 1.6rem !important;
+  color: #ffffff !important;
+  position: relative !important;
+  overflow: hidden !important;
+  font-family: 'Inter', sans-serif !important;
+  margin: 0 !important;
+}
+
+.export-digital-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 10%, transparent 10.5%);
+  background-size: 30px 30px;
+  pointer-events: none;
+}
+
+.export-digital-card .card-gold-stripe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px !important;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b, #d97706, #fbbf24);
+}
+
+.export-digital-card .card-header-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  padding-bottom: 0.9rem !important;
+  margin-bottom: 1.1rem !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.export-digital-card .card-org-branding {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+}
+
+.export-digital-card .card-org-logo {
+  width: 84px !important;
+  height: 84px !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  padding: 4px !important;
+  object-fit: contain !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+  flex-shrink: 0 !important;
+}
+
+.export-digital-card .card-org-name {
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 1.45rem !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  color: #ffffff !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+}
+
+.export-digital-card .card-org-sub {
+  font-size: 0.8rem !important;
+  color: #cbd5e1 !important;
+  line-height: 1.25 !important;
+  margin-top: 3px !important;
+}
+
+.export-digital-card .card-org-address {
+  font-size: 0.72rem !important;
+  color: #94a3b8 !important;
+  margin-top: 3px !important;
+  line-height: 1.2 !important;
+}
+
+.export-digital-card .card-badge-type {
+  background: linear-gradient(135deg, #fbbf24, #d97706) !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 0.9rem !important;
+  padding: 0.35rem 0.9rem !important;
+  border-radius: 6px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.export-digital-card .card-body-row {
+  display: flex !important;
+  gap: 1.5rem !important;
+  align-items: flex-start !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.export-digital-card .card-photo-box {
+  width: 140px !important;
+  height: 165px !important;
+  border-radius: 12px !important;
+  border: 3px solid #ffffff !important;
+  overflow: hidden !important;
+  background-color: #334155 !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.export-digital-card .card-photo-box img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.export-digital-card .card-details-box {
+  flex-grow: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.3rem !important;
+}
+
+.export-digital-card .card-member-name {
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 1.65rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  line-height: 1.2 !important;
+}
+
+.export-digital-card .card-member-id {
+  font-family: monospace !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #93c5fd !important;
+  letter-spacing: 1.5px !important;
+}
+
+.export-digital-card .card-info-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 0.5rem 1.2rem !important;
+  margin-top: 0.4rem !important;
+}
+
+.export-digital-card .card-info-item {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.export-digital-card .card-info-label {
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  color: #94a3b8 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.export-digital-card .card-info-val {
+  font-size: 1.05rem !important;
+  font-weight: 600 !important;
+  color: #f8fafc !important;
+}
+
+.export-digital-card .card-footer-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-top: 0.9rem !important;
+  padding-top: 0.75rem !important;
+  border-top: 1px dashed rgba(255, 255, 255, 0.2) !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.export-digital-card .card-security-chip {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.8rem !important;
+}
+
+.export-digital-card .card-chip-icon {
+  width: 44px !important;
+  height: 30px !important;
+  background: linear-gradient(135deg, #fef08a, #ca8a04) !important;
+  border-radius: 6px !important;
+  border: 1.5px solid #eab308 !important;
+  position: relative !important;
+}
+
+.export-digital-card .card-status-pill {
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  padding: 0.3rem 0.85rem !important;
+  border-radius: 99px !important;
+  text-transform: uppercase !important;
+  background: rgba(34, 197, 94, 0.2) !important;
+  color: #4ade80 !important;
+  border: 1px solid rgba(74, 222, 128, 0.3) !important;
+}
+
+.export-digital-card .card-qr-box {
+  background: #ffffff !important;
+  padding: 5px !important;
+  border-radius: 8px !important;
+  width: 72px !important;
+  height: 72px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35) !important;
+}
+
+.export-digital-card .card-qr-box canvas,
+.export-digital-card .card-qr-box img {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .card-gold-stripe {
   position: absolute;
   top: 0;

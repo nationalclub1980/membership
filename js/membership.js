@@ -78,7 +78,7 @@ function formatCountryDisplay(country) {
 }
 
 /**
- * Render HTML structure of the Digital Card
+ * Render HTML structure of the Digital Card (Responsive & Dedicated Export Copy)
  */
 function renderDigitalCard(member) {
   const container = document.getElementById('digitalCardContainer');
@@ -94,6 +94,7 @@ function renderDigitalCard(member) {
   const rawPhoto = member.photoUrl || member.photoBase64 || '';
   const photoSrc = formatDriveImageUrl(rawPhoto);
 
+  // 1. On-Screen Responsive Card HTML
   const cardHtml = `
     <div class="printable-card-area">
       <div class="digital-card" id="membershipCardElement">
@@ -158,20 +159,99 @@ function renderDigitalCard(member) {
 
   container.innerHTML = cardHtml;
 
-  // Generate QR Code inside card
+  // 2. Dedicated Fixed 856x540 Off-Screen Export Card HTML (Protects exports from mobile responsive cropping)
+  let exportContainer = document.getElementById('exportCardContainer');
+  if (!exportContainer) {
+    exportContainer = document.createElement('div');
+    exportContainer.id = 'exportCardContainer';
+    exportContainer.className = 'export-card-wrapper';
+    exportContainer.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(exportContainer);
+  }
+
+  const exportCardHtml = `
+    <div class="export-digital-card" id="exportMembershipCardElement">
+      <div class="card-gold-stripe"></div>
+      
+      <!-- Header -->
+      <div class="card-header-row">
+        <div class="card-org-branding">
+          <img src="${CONFIG.ORG_LOGO}" class="card-org-logo" alt="Logo" onerror="this.src='assets/logo.svg'">
+          <div>
+            <div class="card-org-name">${CONFIG.ORG_NAME}</div>
+            <div class="card-org-sub">${CONFIG.ORG_TAGLINE}</div>
+            <div class="card-org-address" style="font-size: 0.72rem; color: #94a3b8; margin-top: 3px;">${CONFIG.ORG_ADDRESS}</div>
+          </div>
+        </div>
+        <span class="card-badge-type">${member.membershipType || 'Standard'}</span>
+      </div>
+
+      <!-- Body -->
+      <div class="card-body-row">
+        <div class="card-photo-box">
+          <img src="${photoSrc}" alt="${member.fullName}" onerror="this.src='assets/logo.svg'">
+        </div>
+        
+        <div class="card-details-box">
+          <div class="card-member-name">${member.fullName}</div>
+          <div class="card-member-id">${member.membershipId}</div>
+          
+          <div class="card-info-grid">
+            <div class="card-info-item">
+              <span class="card-info-label">NATIONALITY</span>
+              <span class="card-info-val">${member.nationality || 'Indian'}</span>
+            </div>
+            <div class="card-info-item">
+              <span class="card-info-label">COUNTRY</span>
+              <span class="card-info-val">${formatCountryDisplay(member.residenceCountry || member.country)}</span>
+            </div>
+            <div class="card-info-item">
+              <span class="card-info-label">JOINED</span>
+              <span class="card-info-val">${formatDate(member.joiningDate)}</span>
+            </div>
+            <div class="card-info-item">
+              <span class="card-info-label">VALID UNTIL</span>
+              <span class="card-info-val">${formatDate(member.validUntil)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="card-footer-row">
+        <div class="card-security-chip">
+          <div class="card-chip-icon"></div>
+          <span class="card-status-pill">${member.status || 'Active'}</span>
+        </div>
+
+        <div class="card-qr-box" id="exportCardQrCode" title="Scan to Verify"></div>
+      </div>
+    </div>
+  `;
+
+  exportContainer.innerHTML = exportCardHtml;
+
+  // Generate QR Codes inside both on-screen and export cards
   setTimeout(() => {
-    const qrContainer = document.getElementById('cardQrCode');
-    if (qrContainer && window.QRCode) {
-      qrContainer.innerHTML = '';
-      new QRCode(qrContainer, {
-        text: verifyUrl,
-        width: 44,
-        height: 44,
-        colorDark: "#0f172a",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
-    }
+    const qrConfigs = [
+      { id: 'cardQrCode', size: 44 },
+      { id: 'exportCardQrCode', size: 68 }
+    ];
+
+    qrConfigs.forEach(item => {
+      const qrEl = document.getElementById(item.id);
+      if (qrEl && window.QRCode) {
+        qrEl.innerHTML = '';
+        new QRCode(qrEl, {
+          text: verifyUrl,
+          width: item.size,
+          height: item.size,
+          colorDark: "#0f172a",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+    });
   }, 100);
 }
 
@@ -233,36 +313,60 @@ function initCardActionButtons() {
  * Mobile Fallback: Opens image in a new tab with press-and-hold save instructions.
  * Desktop Fallback: Triggers standard browser file download.
  */
-async function saveMembershipCard() {
-  const cardEl = document.getElementById('membershipCardElement');
-  if (!cardEl) {
-    showToast('Membership card element not found', 'danger');
-    return;
+/**
+ * Dedicated Fixed-Size Canvas Generator for Export (856x540 px)
+ * Captures the off-screen export card to prevent mobile viewport clipping.
+ */
+async function getExportCardCanvas() {
+  let exportCard = document.getElementById('exportMembershipCardElement');
+  const targetEl = exportCard || document.getElementById('membershipCardElement');
+
+  if (!targetEl) {
+    throw new Error('Membership card target element not found');
   }
 
+  // Ensure all images (photo, logo) inside target element are loaded before capture
+  const imgs = targetEl.querySelectorAll('img');
+  await Promise.all(Array.from(imgs).map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise(resolve => {
+      img.onload = resolve;
+      img.onerror = resolve;
+    });
+  }));
+
+  // Short delay to ensure QR canvas element is fully flushed
+  await new Promise(r => setTimeout(r, 120));
+
+  const isExport = targetEl.id === 'exportMembershipCardElement';
+
+  return await html2canvas(targetEl, {
+    width: isExport ? 856 : targetEl.offsetWidth,
+    height: isExport ? 540 : targetEl.offsetHeight,
+    windowWidth: isExport ? 856 : undefined,
+    windowHeight: isExport ? 540 : undefined,
+    scale: 2, // 2x scale for crisp 1712x1080 canvas export
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: null,
+    logging: false
+  });
+}
+
+/**
+ * Primary Action: Save Membership Card as high-resolution PNG Image
+ * Native Mobile: Uses Web Share API (navigator.share) with File object when supported.
+ * Mobile Fallback: Opens image in a new tab with press-and-hold save instructions.
+ * Desktop Fallback: Triggers standard browser file download.
+ */
+async function saveMembershipCard() {
   const memberIdText = (document.getElementById('displayMemberId')?.textContent || 'CARD').trim();
   const fileName = `NASC-Membership-Card-${memberIdText}.png`;
 
   showLoading('Generating high-resolution membership card image...');
 
   try {
-    // Ensure card images (logo, photo) are fully loaded
-    const imgs = cardEl.querySelectorAll('img');
-    await Promise.all(Array.from(imgs).map(img => {
-      if (img.complete) return Promise.resolve();
-      return new Promise(resolve => {
-        img.onload = resolve;
-        img.onerror = resolve;
-      });
-    }));
-
-    const canvas = await html2canvas(cardEl, {
-      scale: 3, // High DPI resolution for crisp card image
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
-      logging: false
-    });
+    const canvas = await getExportCardCanvas();
 
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1.0));
     if (!blob) {
@@ -284,8 +388,7 @@ async function saveMembershipCard() {
           files: [file],
           title: "National Arts & Sports Club Membership Card"
         });
-        // Share sheet succeeded or passed to native app.
-        // Do not falsely display download success toast if cancelled.
+        // Share sheet succeeded or handed to native OS dialog
         return;
       } catch (shareErr) {
         if (shareErr.name === 'AbortError') {
@@ -300,7 +403,7 @@ async function saveMembershipCard() {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 
     if (isMobile) {
-      // 2. Mobile Fallback: Create Object URL, open image in new tab, show hold-to-save instruction
+      // 2. Mobile Fallback: Create Object URL, open image in new tab
       const objectUrl = URL.createObjectURL(blob);
       window.open(objectUrl, '_blank');
 
@@ -337,34 +440,13 @@ async function saveMembershipCard() {
  * Uses html2canvas + jsPDF to generate printable PDF document.
  */
 async function downloadPdfCard() {
-  const cardEl = document.getElementById('membershipCardElement');
-  if (!cardEl) {
-    showToast('Membership card element not found', 'danger');
-    return;
-  }
-
   const memberIdText = (document.getElementById('displayMemberId')?.textContent || 'CARD').trim();
   const fileName = `NASC-Membership-Card-${memberIdText}.pdf`;
 
   showLoading('Generating printable PDF card...');
 
   try {
-    const imgs = cardEl.querySelectorAll('img');
-    await Promise.all(Array.from(imgs).map(img => {
-      if (img.complete) return Promise.resolve();
-      return new Promise(resolve => {
-        img.onload = resolve;
-        img.onerror = resolve;
-      });
-    }));
-
-    const canvas = await html2canvas(cardEl, {
-      scale: 3,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
-      logging: false
-    });
+    const canvas = await getExportCardCanvas();
 
     const imgData = canvas.toDataURL('image/png');
     const { jsPDF } = window.jspdf || {};
