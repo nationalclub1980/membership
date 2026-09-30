@@ -300,7 +300,7 @@ const DemoStore = {
         {
           membershipId: `${CONFIG.ID_PREFIX}-${CONFIG.ID_YEAR}-0001`,
           fullName: "Alexander Wright",
-          photoUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
+          photoUrl: "assets/club-logo.png",
           dob: "1994-05-15",
           gender: "Male",
           nationality: "Indian",

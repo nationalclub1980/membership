@@ -27,6 +27,12 @@ function initFormDefaults() {
     const today = new Date().toISOString().split('T')[0];
     joiningDateInput.value = today;
   }
+
+  const dobInput = document.getElementById('dob');
+  if (dobInput) {
+    const today = new Date().toISOString().split('T')[0];
+    dobInput.setAttribute('max', today);
+  }
 }
 
 /**
@@ -142,7 +148,14 @@ function initFormValidation(form) {
 
     // Validation checks
     if (!fullName) { markInvalid('fullName'); isValid = false; }
-    if (!dob) { markInvalid('dob'); isValid = false; }
+    // DOB Validation (Must not be in the future)
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (!dob || dob > todayStr) {
+      markInvalid('dob');
+      showToast('Date of Birth cannot be in the future', 'danger');
+      isValid = false;
+    }
+
     if (!gender) { markInvalid('gender'); isValid = false; }
     if (!nationality) { markInvalid('nationality'); isValid = false; }
     if (!residenceCountry) { markInvalid('residenceCountry'); isValid = false; }
@@ -151,6 +164,13 @@ function initFormValidation(form) {
     const phoneRegex = /^[+]?[0-9\s\-]{8,15}$/;
     if (!phone || !phoneRegex.test(phone)) {
       markInvalid('phone');
+      isValid = false;
+    }
+
+    // Optional WhatsApp validation (if provided)
+    if (whatsapp && !phoneRegex.test(whatsapp)) {
+      markInvalid('whatsapp');
+      showToast('Please enter a valid WhatsApp phone number', 'danger');
       isValid = false;
     }
 

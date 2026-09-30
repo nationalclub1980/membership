@@ -44,12 +44,11 @@ const CONFIG = {
     { id: "Lifetime", name: "Lifetime Member", fee: "$500 one-time", badgeBg: "linear-gradient(135deg, #10b981, #047857)" }
   ],
 
-  // 6. Admin Panel Default Passcode (Checked on frontend & verified by Apps Script)
-  ADMIN_DEFAULT_PIN: "admin123",
+  // 6. Local Offline Demo Passcode (Used ONLY when WEB_APP_URL is unconfigured for local testing)
+  // When WEB_APP_URL is connected, admin PIN authentication is enforced strictly on the Apps Script backend.
+  DEMO_ONLY_PASSCODE: "admin123",
 
   // 7. Demo Mode Setting
-  // If WEB_APP_URL is empty, system automatically operates in Client Demo Mode
-  // saving records in browser LocalStorage so you can test immediately!
   ENABLE_DEMO_FALLBACK: true
 };
 

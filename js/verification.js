@@ -7,9 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const verifyForm = document.getElementById('verifyForm');
   const verifyResultContainer = document.getElementById('verifyResult');
 
-  // Check URL query param (e.g., verify.html?id=ORG-2026-0001)
+  // Check URL query param (e.g., verify.html?id=NASC-2026-0001)
   const urlParams = new URLSearchParams(window.location.search);
-  const searchId = urlParams.get('id');
+  const searchId = (urlParams.get('id') || '').trim().toUpperCase();
 
   if (searchId) {
     const input = document.getElementById('verifyIdInput');
@@ -20,7 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (verifyForm) {
     verifyForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const id = document.getElementById('verifyIdInput').value.trim();
+      const rawInput = document.getElementById('verifyIdInput');
+      const id = rawInput ? rawInput.value.trim().toUpperCase() : '';
+      if (rawInput) rawInput.value = id;
       if (!id) {
         showToast('Please enter a Membership ID to verify', 'warning');
         return;
@@ -37,19 +39,22 @@ async function performVerification(membershipId) {
   const container = document.getElementById('verifyResult');
   if (!container) return;
 
+  const normalizedId = (membershipId || '').trim().toUpperCase();
+  if (!normalizedId) return;
+
   showLoading('Verifying membership records...');
   try {
     let result = null;
 
     if (CONFIG.WEB_APP_URL && !CONFIG.WEB_APP_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL")) {
-      const resp = await fetch(`${CONFIG.WEB_APP_URL}?action=verifyMember&id=${encodeURIComponent(membershipId)}`);
+      const resp = await fetch(`${CONFIG.WEB_APP_URL}?action=verifyMember&id=${encodeURIComponent(normalizedId)}`);
       const apiRes = await resp.json();
       if (apiRes.status === 'success') {
         result = apiRes.data;
       }
     } else {
       // Local Demo lookup
-      const raw = DemoStore.findMember(membershipId);
+      const raw = DemoStore.findMember(normalizedId);
       if (raw) {
         // Strip out PII for public output
         result = {

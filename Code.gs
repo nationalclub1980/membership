@@ -39,7 +39,7 @@ function doGet(e) {
     let responseData = { status: 'error', message: 'Invalid action parameter' };
 
     if (action === 'getMember') {
-      responseData = getMemberRecord(params.id);
+      responseData = getMemberRecord(params.id, params.pin);
     } else if (action === 'verifyMember') {
       responseData = getPublicVerificationRecord(params.id);
     } else if (action === 'adminLogin') {
@@ -221,9 +221,12 @@ function generateNextMembershipId(sheet) {
 }
 
 /**
- * Get Full Member Record (For lookup)
+ * Get Full Member Record (Requires Admin Passcode Server Authentication)
  */
-function getMemberRecord(query) {
+function getMemberRecord(query, pin) {
+  if (pin !== CONFIG.ADMIN_PIN) {
+    return { status: 'error', message: 'Unauthorized access. Full record lookup requires admin passcode.' };
+  }
   if (!query) return { status: 'error', message: 'Query parameter missing' };
 
   const sheet = getOrCreateSheet();

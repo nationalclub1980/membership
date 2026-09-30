@@ -55,8 +55,8 @@ async function authenticateAndUnlock(pin, showFeedback = true) {
       const result = await resp.json();
       isAuthenticated = (result.status === 'success');
     } else {
-      // Demo mode validation against CONFIG.ADMIN_DEFAULT_PIN
-      isAuthenticated = (pin === CONFIG.ADMIN_DEFAULT_PIN);
+      // Offline local demo mode validation
+      isAuthenticated = (pin === CONFIG.DEMO_ONLY_PASSCODE);
     }
 
     if (isAuthenticated) {
@@ -429,7 +429,7 @@ async function executeDeleteSingleMember(membershipId) {
         console.error('Non-JSON response received from Google Apps Script backend:', e);
       }
 
-      console.log('Delete Member Network Response:', result);
+
 
       if (result && (result.status === 'success' || result.success === true)) {
         allAdminMembers = allAdminMembers.filter(m => m.membershipId !== membershipId);
@@ -541,7 +541,7 @@ async function executeBulkDelete() {
         console.error('Non-JSON response received from Google Apps Script backend:', e);
       }
 
-      console.log('Bulk Delete Network Response:', result);
+
 
       if (result && (result.status === 'success' || result.success === true)) {
         const idsSet = new Set(idsArray);

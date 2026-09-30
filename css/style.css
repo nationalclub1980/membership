@@ -1708,3 +1708,58 @@ textarea.form-control {
     font-size: 1.5rem;
   }
 }
+
+/* Admin Toolbar Mobile Optimization */
+.admin-toolbar-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .brand-title {
+    max-width: 220px !important;
+    font-size: 0.86rem;
+  }
+  .brand-meta {
+    max-width: 220px !important;
+  }
+  .admin-toolbar-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    width: 100% !important;
+    gap: 0.4rem !important;
+    margin-top: 0.5rem !important;
+  }
+  .admin-toolbar-actions .btn {
+    width: 100% !important;
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.76rem !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .brand {
+    gap: 0.4rem;
+  }
+  .brand-logo-img {
+    width: 36px;
+    height: 36px;
+  }
+  .brand-title {
+    font-size: 0.8rem !important;
+    line-height: 1.15;
+    max-width: 195px !important;
+  }
+  .brand-meta {
+    font-size: 0.58rem !important;
+    max-width: 195px !important;
+  }
+  .mobile-toggle {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.78rem;
+  }
+}

@@ -78,6 +78,19 @@ function formatCountryDisplay(country) {
 }
 
 /**
+ * Helper: Escape HTML strings to prevent XSS script execution
+ */
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
  * Render HTML structure of the Digital Card (Responsive & Dedicated Export Copy)
  */
 function renderDigitalCard(member) {
@@ -93,6 +106,14 @@ function renderDigitalCard(member) {
 
   const rawPhoto = member.photoUrl || member.photoBase64 || '';
   const photoSrc = formatDriveImageUrl(rawPhoto);
+
+  // Escaped member fields for XSS security
+  const safeName = escapeHtml(member.fullName);
+  const safeId = escapeHtml(member.membershipId);
+  const safeType = escapeHtml(member.membershipType || 'Standard');
+  const safeNationality = escapeHtml(member.nationality || 'Indian');
+  const safeCountry = escapeHtml(formatCountryDisplay(member.residenceCountry || member.country));
+  const safeStatus = escapeHtml(member.status || 'Active');
 
   // 1. On-Screen Responsive Card HTML
   const cardHtml = `
@@ -110,27 +131,27 @@ function renderDigitalCard(member) {
               <div class="card-org-address" style="font-size: 0.6rem; color: #94a3b8; margin-top: 2px;">${CONFIG.ORG_ADDRESS}</div>
             </div>
           </div>
-          <span class="card-badge-type">${member.membershipType || 'Standard'}</span>
+          <span class="card-badge-type">${safeType}</span>
         </div>
 
         <!-- Body -->
         <div class="card-body-row">
           <div class="card-photo-box">
-            <img src="${photoSrc}" alt="${member.fullName}" onerror="this.src='assets/logo.svg'">
+            <img src="${photoSrc}" alt="${safeName}" onerror="this.src='assets/logo.svg'">
           </div>
           
           <div class="card-details-box">
-            <div class="card-member-name">${member.fullName}</div>
-            <div class="card-member-id">${member.membershipId}</div>
+            <div class="card-member-name">${safeName}</div>
+            <div class="card-member-id">${safeId}</div>
             
             <div class="card-info-grid">
               <div class="card-info-item">
                 <span class="card-info-label">NATIONALITY</span>
-                <span class="card-info-val">${member.nationality || 'Indian'}</span>
+                <span class="card-info-val">${safeNationality}</span>
               </div>
               <div class="card-info-item">
                 <span class="card-info-label">COUNTRY</span>
-                <span class="card-info-val">${formatCountryDisplay(member.residenceCountry || member.country)}</span>
+                <span class="card-info-val">${safeCountry}</span>
               </div>
               <div class="card-info-item">
                 <span class="card-info-label">JOINED</span>
@@ -148,7 +169,7 @@ function renderDigitalCard(member) {
         <div class="card-footer-row">
           <div class="card-security-chip">
             <div class="card-chip-icon"></div>
-            <span class="card-status-pill">${member.status || 'Active'}</span>
+            <span class="card-status-pill">${safeStatus}</span>
           </div>
 
           <div class="card-qr-box" id="cardQrCode" title="Scan to Verify"></div>
@@ -183,27 +204,27 @@ function renderDigitalCard(member) {
             <div class="card-org-address" style="font-size: 0.72rem; color: #94a3b8; margin-top: 3px;">${CONFIG.ORG_ADDRESS}</div>
           </div>
         </div>
-        <span class="card-badge-type">${member.membershipType || 'Standard'}</span>
+        <span class="card-badge-type">${safeType}</span>
       </div>
 
       <!-- Body -->
       <div class="card-body-row">
         <div class="card-photo-box">
-          <img src="${photoSrc}" alt="${member.fullName}" onerror="this.src='assets/logo.svg'">
+          <img src="${photoSrc}" alt="${safeName}" onerror="this.src='assets/logo.svg'">
         </div>
         
         <div class="card-details-box">
-          <div class="card-member-name">${member.fullName}</div>
-          <div class="card-member-id">${member.membershipId}</div>
+          <div class="card-member-name">${safeName}</div>
+          <div class="card-member-id">${safeId}</div>
           
           <div class="card-info-grid">
             <div class="card-info-item">
               <span class="card-info-label">NATIONALITY</span>
-              <span class="card-info-val">${member.nationality || 'Indian'}</span>
+              <span class="card-info-val">${safeNationality}</span>
             </div>
             <div class="card-info-item">
               <span class="card-info-label">COUNTRY</span>
-              <span class="card-info-val">${formatCountryDisplay(member.residenceCountry || member.country)}</span>
+              <span class="card-info-val">${safeCountry}</span>
             </div>
             <div class="card-info-item">
               <span class="card-info-label">JOINED</span>
@@ -221,7 +242,7 @@ function renderDigitalCard(member) {
       <div class="card-footer-row">
         <div class="card-security-chip">
           <div class="card-chip-icon"></div>
-          <span class="card-status-pill">${member.status || 'Active'}</span>
+          <span class="card-status-pill">${safeStatus}</span>
         </div>
 
         <div class="card-qr-box" id="exportCardQrCode" title="Scan to Verify"></div>
