@@ -163,7 +163,7 @@ function renderVerificationFailed(membershipId) {
       </p>
 
       <p style="font-size: 0.9rem; color: var(--slate-500);">
-        If you recently registered, please ensure you entered the exact ID format (e.g., <code>ORG-2026-0001</code>).
+        If you recently registered, please ensure you entered the exact ID format (e.g., <code>NASC-2026-0001</code>).
       </p>
     </div>
   `;

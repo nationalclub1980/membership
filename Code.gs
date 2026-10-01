@@ -108,7 +108,7 @@ function doPost(e) {
 function processRegistration(data) {
   const sheet = getOrCreateSheet();
 
-  // Safely Generate Next Sequential Membership ID (e.g. ORG-2026-0001)
+  // Safely Generate Next Sequential Membership ID (e.g. NASC-2026-0001)
   const nextId = generateNextMembershipId(sheet);
 
   // Upload Photo to Google Drive

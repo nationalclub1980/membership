@@ -64,7 +64,7 @@
 
   <main class="container" style="padding-top: 2.5rem; padding-bottom: 5rem;">
     <!-- Welcome Header -->
-    <div class="text-center" style="margin-bottom: 2rem;">
+    <div class="text-center no-print" style="margin-bottom: 2rem;">
       <h1 style="font-size: 2.2rem; color: var(--primary-900);">Official Digital Membership Card</h1>
       <p style="color: var(--slate-600); max-width: 600px; margin: 0.5rem auto 0;">
         Welcome to <span class="org-name-text">NATIONAL ARTS & SPORTS CLUB</span>. Your official digital membership card is generated below.
@@ -72,20 +72,15 @@
     </div>
 
     <!-- Assigned ID Banner -->
-    <div style="text-align: center; margin-bottom: 2rem;">
+    <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
       <div style="display: inline-flex; align-items: center; gap: 0.5rem; background-color: var(--primary-50); border: 1px solid var(--primary-200); padding: 0.75rem 1.5rem; border-radius: var(--radius-full); font-weight: 700; color: var(--primary-800);">
         <span>YOUR ASSIGNED MEMBERSHIP ID:</span>
         <span id="displayMemberId" style="font-family: monospace; font-size: 1.2rem; color: var(--primary-700);">NASC-2026-0001</span>
       </div>
     </div>
 
-    <!-- Digital Card Canvas Root -->
+    <!-- Digital Card Canvas Root (Single Source of Truth) -->
     <div id="digitalCardContainer" style="margin: 2rem 0;">
-      <!-- Dynamically Populated by membership.js -->
-    </div>
-
-    <!-- Dedicated Off-Screen Export Card Container (Fixed 856x540 for Uncropped Mobile & Desktop Export) -->
-    <div id="exportCardContainer" class="export-card-wrapper" aria-hidden="true">
       <!-- Dynamically Populated by membership.js -->
     </div>
 

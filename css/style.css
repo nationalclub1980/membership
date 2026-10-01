@@ -785,6 +785,16 @@ textarea.form-control {
 }
 
 /* Digital Membership Card Styles (Premium Corporate Layout) */
+.printable-card-area {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+}
+
 .card-wrapper {
   perspective: 1000px;
   margin: 2rem auto;
@@ -794,11 +804,11 @@ textarea.form-control {
 .digital-card {
   width: 100%;
   max-width: 450px;
-  aspect-ratio: 1.586 / 1;
-  /* Standard CR80 Card Ratio */
+  min-height: 275px;
+  box-sizing: border-box;
   background: linear-gradient(135deg, #061d19 0%, #063d32 48%, #082c49 100%);
   border-radius: 22px;
-  padding: 1.15rem 1.35rem 0.95rem;
+  padding: 1rem 1.25rem 0.85rem;
   color: #ffffff;
   position: relative;
   overflow: hidden;
@@ -853,8 +863,6 @@ textarea.form-control {
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   padding-bottom: 0.5rem;
   margin-bottom: 0.55rem;
-  position: relative;
-  z-index: 5;
 }
 
 .card-org-branding {
@@ -864,10 +872,9 @@ textarea.form-control {
 }
 
 .card-org-logo {
-  width: 90px;
-  height: 90px;
+  width: 65px;
+  height: 65px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
   flex-shrink: 0;
 }
 
@@ -900,9 +907,8 @@ textarea.form-control {
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 1.5px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
-  backdrop-filter: blur(4px);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -911,8 +917,6 @@ textarea.form-control {
   display: flex;
   gap: 0.85rem;
   align-items: center;
-  position: relative;
-  z-index: 5;
   margin-top: 0.2rem;
 }
 
@@ -991,8 +995,6 @@ textarea.form-control {
   align-items: center;
   justify-content: space-between;
   margin-top: 0.4rem;
-  position: relative;
-  z-index: 5;
 }
 
 .card-status-pill {
@@ -1031,446 +1033,7 @@ textarea.form-control {
   height: 100%;
 }
 
-/* Dedicated Fixed-Size Export Card (Off-Screen for Crisp PVC 856x540 Output) */
-.export-card-wrapper {
-  position: fixed !important;
-  left: -10000px !important;
-  top: 0 !important;
-  width: 856px !important;
-  height: 540px !important;
-  z-index: -9999 !important;
-  pointer-events: none !important;
-  visibility: visible !important;
-  overflow: visible !important;
-}
 
-.export-digital-card {
-  width: 856px !important;
-  height: 540px !important;
-  box-sizing: border-box !important;
-  background: linear-gradient(135deg, #061d19 0%, #063d32 48%, #082c49 100%) !important;
-  border-radius: 36px !important;
-  padding: 2.2rem 2.6rem !important;
-  color: #ffffff !important;
-  position: relative !important;
-  overflow: hidden !important;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.15) !important;
-  font-family: 'Inter', system-ui, sans-serif !important;
-  margin: 0 !important;
-}
-
-.export-digital-card::before {
-  content: "" !important;
-  position: absolute !important;
-  width: 600px !important;
-  height: 600px !important;
-  right: -240px !important;
-  top: -300px !important;
-  border-radius: 50% !important;
-  background: rgba(0, 190, 150, 0.25) !important;
-  pointer-events: none !important;
-}
-
-.export-digital-card::after {
-  content: "" !important;
-  position: absolute !important;
-  width: 520px !important;
-  height: 520px !important;
-  right: -320px !important;
-  bottom: -300px !important;
-  border-radius: 50% !important;
-  border: 90px solid rgba(0, 145, 220, 0.22) !important;
-  pointer-events: none !important;
-}
-
-.export-digital-card .diagonal {
-  position: absolute !important;
-  width: 800px !important;
-  height: 180px !important;
-  right: -260px !important;
-  bottom: 30px !important;
-  transform: rotate(-20deg) !important;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(0, 192, 160, 0.3),
-      rgba(0, 130, 220, 0.35)) !important;
-  pointer-events: none !important;
-}
-
-.export-digital-card .card-header-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
-  padding-bottom: 0.9rem !important;
-  margin-bottom: 1.1rem !important;
-  position: relative !important;
-  z-index: 5 !important;
-}
-
-.export-digital-card .card-org-branding {
-  display: flex !important;
-  align-items: center !important;
-  gap: 1rem !important;
-}
-
-.export-digital-card .card-org-logo {
-  width: 155px !important;
-  height: 155px !important;
-  object-fit: contain !important;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5)) !important;
-}
-
-.export-digital-card .card-org-name {
-  font-family: 'Outfit', sans-serif !important;
-  font-size: 1.5rem !important;
-  font-weight: 800 !important;
-  line-height: 1.15 !important;
-  color: #ffffff !important;
-  letter-spacing: 1px !important;
-}
-
-.export-digital-card .card-org-sub {
-  font-size: 0.78rem !important;
-  color: #9cd4c9 !important;
-  letter-spacing: 1.5px !important;
-  margin-top: 2px !important;
-}
-
-.export-digital-card .card-org-address {
-  font-size: 0.72rem !important;
-  color: #a8ded3 !important;
-  margin-top: 2px !important;
-  opacity: 0.9 !important;
-}
-
-.export-digital-card .card-badge-type {
-  padding: 10px 22px !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  border-radius: 40px !important;
-  font-size: 0.9rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 1.5px !important;
-  background: rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
-  text-transform: uppercase !important;
-  white-space: nowrap !important;
-}
-
-.export-digital-card .card-body-row {
-  display: flex !important;
-  gap: 1.6rem !important;
-  align-items: center !important;
-  position: relative !important;
-  z-index: 5 !important;
-  margin-top: 0.5rem !important;
-}
-
-.export-digital-card .card-photo-box {
-  width: 140px !important;
-  height: 160px !important;
-  border-radius: 20px !important;
-  border: 4px solid #31d3b0 !important;
-  overflow: hidden !important;
-  background-color: #062420 !important;
-  flex-shrink: 0 !important;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5) !important;
-}
-
-.export-digital-card .card-photo-box img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-}
-
-.export-digital-card .card-details-box {
-  flex-grow: 1 !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.export-digital-card .card-member-name {
-  font-family: 'Outfit', sans-serif !important;
-  font-size: 2.1rem !important;
-  font-weight: 800 !important;
-  color: #ffffff !important;
-  line-height: 1.15 !important;
-}
-
-.export-digital-card .card-member-id {
-  font-family: monospace !important;
-  font-size: 1.35rem !important;
-  font-weight: 700 !important;
-  color: #a8ded3 !important;
-  letter-spacing: 1.5px !important;
-  margin-top: 2px !important;
-}
-
-.export-digital-card .card-info-grid {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 0.6rem 1.8rem !important;
-  margin-top: 0.8rem !important;
-}
-
-.export-digital-card .card-info-item {
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.export-digital-card .card-info-label {
-  font-size: 0.75rem !important;
-  text-transform: uppercase !important;
-  color: #68cbb8 !important;
-  letter-spacing: 1.5px !important;
-  font-weight: 700 !important;
-}
-
-.export-digital-card .card-info-val {
-  font-size: 1.1rem !important;
-  font-weight: 600 !important;
-  color: #ffffff !important;
-}
-
-.export-digital-card .card-footer-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  margin-top: 1rem !important;
-  position: relative !important;
-  z-index: 5 !important;
-}
-
-.export-digital-card .card-status-pill {
-  font-size: 0.95rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 2px !important;
-  color: #8ee1d2 !important;
-  text-transform: uppercase !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
-}
-
-.export-digital-card .card-status-pill::before {
-  content: "●" !important;
-  color: #31d3b0 !important;
-  font-size: 1.1rem !important;
-}
-
-.export-digital-card .card-qr-box {
-  background: #ffffff !important;
-  padding: 5px !important;
-  border-radius: 8px !important;
-  width: 72px !important;
-  height: 72px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex-shrink: 0 !important;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4) !important;
-}
-
-.export-digital-card .card-qr-box canvas,
-.export-digital-card .card-qr-box img {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-.card-gold-stripe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, #fbbf24, #f59e0b, #d97706, #fbbf24);
-}
-
-.card-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  padding-bottom: 0.5rem;
-  margin-bottom: 0.55rem;
-  position: relative;
-  z-index: 2;
-}
-
-.card-org-branding {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-
-.card-org-logo {
-  width: 90px;
-  height: 90px;
-  border-radius: 0;
-  background: transparent;
-  padding: 0;
-  object-fit: contain;
-  box-shadow: none;
-  flex-shrink: 0;
-}
-
-.card-org-name {
-  font-family: 'Outfit', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 800;
-  line-height: 1.15;
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.card-org-sub {
-  font-size: 0.55rem;
-  color: #cbd5e1;
-  line-height: 1.2;
-}
-
-.card-badge-type {
-  background: linear-gradient(135deg, #fbbf24, #d97706);
-  color: #0f172a;
-  font-weight: 800;
-  font-size: 0.65rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.card-body-row {
-  display: flex;
-  gap: 0.85rem;
-  align-items: flex-start;
-  position: relative;
-  z-index: 2;
-}
-
-.card-photo-box {
-  width: 90px;
-  height: 105px;
-  border-radius: 8px;
-  border: 2px solid #ffffff;
-  overflow: hidden;
-  background-color: #334155;
-  flex-shrink: 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.card-photo-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.card-details-box {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.card-member-name {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1.2;
-}
-
-.card-member-id {
-  font-family: monospace;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #93c5fd;
-  letter-spacing: 1px;
-
-}
-
-.card-info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.25rem 0.5rem;
-  margin-top: 0.25rem;
-}
-
-.card-info-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.card-info-label {
-  font-size: 0.58rem;
-  text-transform: uppercase;
-  color: #94a3b8;
-  letter-spacing: 0.5px;
-}
-
-.card-info-val {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #f8fafc;
-}
-
-.card-footer-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 0.4rem;
-  padding-top: 0.35rem;
-  border-top: 1px dashed rgba(255, 255, 255, 0.15);
-  position: relative;
-  z-index: 2;
-}
-
-.card-qr-box {
-  background: #ffffff;
-  padding: 3px;
-  border-radius: 6px;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-}
-
-.card-qr-box canvas,
-.card-qr-box img {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-.card-security-chip {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.card-chip-icon {
-  width: 28px;
-  height: 20px;
-  background: linear-gradient(135deg, #fef08a, #ca8a04);
-  border-radius: 4px;
-  border: 1px solid #eab308;
-  position: relative;
-}
-
-.card-status-pill {
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.15rem 0.5rem;
-  border-radius: 99px;
-  text-transform: uppercase;
-  background: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
-  border: 1px solid rgba(74, 222, 128, 0.3);
-}
 
 /* Verification Result Card */
 .verify-card {
@@ -1849,28 +1412,6 @@ textarea.form-control {
   font-size: 0.85rem;
 }
 
-/* Print Styles */
-@media print {
-  body * {
-    visibility: hidden;
-  }
-
-  .printable-card-area,
-  .printable-card-area * {
-    visibility: visible;
-  }
-
-  .printable-card-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-}
 
 /* Mobile Responsive System */
 @media (max-width: 768px) {
@@ -2084,5 +1625,69 @@ textarea.form-control {
   .mobile-toggle {
     padding: 0.35rem 0.55rem;
     font-size: 0.78rem;
+  }
+}
+
+/* Print Optimization & Custom Page Dimensions */
+@page {
+  size: 85.6mm 54mm;
+  margin: 0;
+}
+
+@media print {
+  html, body {
+    width: 85.6mm !important;
+    height: 54mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    overflow: hidden !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .top-bar,
+  .navbar,
+  .footer,
+  .no-print,
+  #mobileSaveInstruction,
+  .export-card-wrapper {
+    display: none !important;
+  }
+
+  .printable-card-area,
+  .printable-card-area * {
+    visibility: visible !important;
+  }
+
+  .printable-card-area {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 85.6mm !important;
+    height: 54mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: none !important;
+  }
+
+  .digital-card {
+    width: 85.6mm !important;
+    height: 54mm !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 4mm !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    page-break-inside: avoid !important;
   }
 }

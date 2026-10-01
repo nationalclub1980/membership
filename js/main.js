@@ -313,7 +313,7 @@ const DemoStore = {
           state: "New York",
           pinCode: "10001",
           bloodGroup: "O+",
-          membershipType: "Premium",
+          membershipType: "Adult Membership",
           joiningDate: new Date().toISOString().split('T')[0],
           validFrom: formatDate(new Date()),
           validUntil: formatDate(new Date(new Date().setFullYear(new Date().getFullYear() + 1))),
