@@ -802,12 +802,12 @@ textarea.form-control {
 }
 
 /* ==========================================================================
-   MASTER ID CARD DESIGN SYSTEM (CR80 Standard 85.60mm x 53.98mm Aspect Ratio)
+   MASTER ID CARD DESIGN SYSTEM (CR80 Standard 85.60mm x 53.98mm / 1536x969 px Canvas)
    ========================================================================== */
 
 .printable-card-area {
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -816,34 +816,35 @@ textarea.form-control {
 
 .card-scale-wrapper {
   width: 100%;
-  max-width: 450px;
+  max-width: 500px;
   position: relative;
-  aspect-ratio: 85.6 / 53.98;
+  aspect-ratio: 1536 / 969;
   margin: 0 auto;
 }
 
 .master-card-canvas {
-  width: 856px;
-  height: 540px;
+  width: 1536px;
+  height: 969px;
   position: absolute;
   top: 0;
   left: 0;
   transform-origin: top left;
-  transform: scale(0.525699); /* 450 / 856 */
+  transform: scale(var(--card-scale, 0.32552));
   box-sizing: border-box;
   background: linear-gradient(135deg, #061d19 0%, #063d32 48%, #082c49 100%);
-  border-radius: 36px;
-  padding: 2.2rem 2.6rem 1.8rem;
+  border-radius: 64px;
+  padding: 4rem 4.5rem 3.2rem;
   color: #ffffff;
   overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), inset 0 0 0 2px rgba(255, 255, 255, 0.12);
+  box-shadow: 0 45px 100px rgba(0, 0, 0, 0.55), inset 0 0 0 3px rgba(255, 255, 255, 0.12);
   font-family: 'Inter', system-ui, sans-serif;
   user-select: none;
 }
 
 /* Responsive Scaling for smaller screens */
-@media (max-width: 480px) {
+@media (max-width: 520px) {
   .card-scale-wrapper {
+    width: 100%;
     max-width: 100%;
   }
 }
@@ -852,10 +853,10 @@ textarea.form-control {
 .master-card-canvas::before {
   content: "";
   position: absolute;
-  width: 580px;
-  height: 580px;
-  right: -220px;
-  top: -280px;
+  width: 1040px;
+  height: 1040px;
+  right: -400px;
+  top: -500px;
   border-radius: 50%;
   background: rgba(0, 190, 150, 0.22);
   pointer-events: none;
@@ -864,21 +865,21 @@ textarea.form-control {
 .master-card-canvas::after {
   content: "";
   position: absolute;
-  width: 500px;
-  height: 500px;
-  right: -280px;
-  bottom: -260px;
+  width: 900px;
+  height: 900px;
+  right: -500px;
+  bottom: -460px;
   border-radius: 50%;
-  border: 85px solid rgba(0, 145, 220, 0.2);
+  border: 150px solid rgba(0, 145, 220, 0.2);
   pointer-events: none;
 }
 
 .master-card-canvas .diagonal-beam {
   position: absolute;
-  width: 780px;
-  height: 170px;
-  right: -240px;
-  bottom: 30px;
+  width: 1400px;
+  height: 300px;
+  right: -420px;
+  bottom: 50px;
   transform: rotate(-20deg);
   background: linear-gradient(90deg, transparent, rgba(0, 192, 160, 0.28), rgba(0, 130, 220, 0.32));
   pointer-events: none;
@@ -888,8 +889,8 @@ textarea.form-control {
 .master-card-canvas .security-watermark {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 18px 18px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 2px, transparent 2px);
+  background-size: 32px 32px;
   pointer-events: none;
 }
 
@@ -898,55 +899,55 @@ textarea.form-control {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.18);
-  padding-bottom: 0.9rem;
-  margin-bottom: 1.1rem;
+  border-bottom: 3.5px solid rgba(255, 255, 255, 0.18);
+  padding-bottom: 1.6rem;
+  margin-bottom: 2rem;
 }
 
 .mc-org-branding {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: 2rem;
 }
 
 .mc-org-logo {
-  width: 115px;
-  height: 115px;
+  width: 200px;
+  height: 200px;
   object-fit: contain;
   flex-shrink: 0;
 }
 
 .mc-org-name {
   font-family: 'Outfit', sans-serif;
-  font-size: 1.55rem;
+  font-size: 2.75rem;
   font-weight: 800;
   line-height: 1.15;
   color: #ffffff;
-  letter-spacing: 0.8px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
 }
 
 .mc-org-sub {
-  font-size: 0.8rem;
+  font-size: 1.4rem;
   color: #9cd4c9;
-  letter-spacing: 1.2px;
-  margin-top: 3px;
+  letter-spacing: 2px;
+  margin-top: 5px;
 }
 
 .mc-org-address {
-  font-size: 0.74rem;
+  font-size: 1.3rem;
   color: #a8ded3;
   opacity: 0.9;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .mc-badge-type {
-  padding: 10px 22px;
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  border-radius: 40px;
-  font-size: 0.92rem;
+  padding: 18px 40px;
+  border: 3.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 70px;
+  font-size: 1.65rem;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 3.5px;
   background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
   text-transform: uppercase;
@@ -955,20 +956,20 @@ textarea.form-control {
 
 .mc-body-row {
   display: flex;
-  gap: 1.6rem;
+  gap: 2.8rem;
   align-items: center;
-  margin-top: 0.4rem;
+  margin-top: 0.8rem;
 }
 
 .mc-photo-box {
-  width: 140px;
-  height: 160px;
-  border-radius: 24px;
-  border: 4px solid #31d3b0;
+  width: 250px;
+  height: 290px;
+  border-radius: 42px;
+  border: 7px solid #31d3b0;
   overflow: hidden;
   background-color: #062420;
   flex-shrink: 0;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
 .mc-photo-box img {
@@ -985,7 +986,7 @@ textarea.form-control {
 
 .mc-member-name {
   font-family: 'Outfit', sans-serif;
-  font-size: 2.15rem;
+  font-size: 3.8rem;
   font-weight: 800;
   color: #ffffff;
   line-height: 1.15;
@@ -993,23 +994,23 @@ textarea.form-control {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 480px;
+  max-width: 860px;
 }
 
 .mc-member-id {
   font-family: monospace;
-  font-size: 1.4rem;
+  font-size: 2.5rem;
   font-weight: 700;
   color: #a8ded3;
-  letter-spacing: 2px;
-  margin-top: 2px;
+  letter-spacing: 3.5px;
+  margin-top: 4px;
 }
 
 .mc-info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.6rem 1.8rem;
-  margin-top: 0.8rem;
+  gap: 1rem 3.2rem;
+  margin-top: 1.4rem;
 }
 
 .mc-info-item {
@@ -1018,15 +1019,15 @@ textarea.form-control {
 }
 
 .mc-info-label {
-  font-size: 0.78rem;
+  font-size: 1.38rem;
   text-transform: uppercase;
   color: #68cbb8;
-  letter-spacing: 2px;
+  letter-spacing: 3.5px;
   font-weight: 700;
 }
 
 .mc-info-val {
-  font-size: 1.12rem;
+  font-size: 2.0rem;
   font-weight: 600;
   color: #ffffff;
   white-space: nowrap;
@@ -1038,37 +1039,37 @@ textarea.form-control {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 1rem;
+  margin-top: 1.8rem;
 }
 
 .mc-status-pill {
-  font-size: 0.98rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 3.5px;
   color: #8ee1d2;
   text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.8rem;
 }
 
 .mc-status-pill::before {
   content: "●";
   color: #31d3b0;
-  font-size: 1.2rem;
+  font-size: 2.1rem;
 }
 
 .mc-qr-box {
   background: #ffffff;
-  padding: 6px;
-  border-radius: 12px;
-  width: 76px;
-  height: 76px;
+  padding: 10px;
+  border-radius: 20px;
+  width: 135px;
+  height: 135px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
 }
 
 .mc-qr-box canvas,
@@ -1079,9 +1080,9 @@ textarea.form-control {
 
 /* Back Side Specific Elements */
 .mc-back-header {
-  border-bottom: 2px solid rgba(255, 255, 255, 0.18);
-  padding-bottom: 0.8rem;
-  margin-bottom: 1rem;
+  border-bottom: 3.5px solid rgba(255, 255, 255, 0.18);
+  padding-bottom: 1.4rem;
+  margin-bottom: 1.8rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1089,56 +1090,56 @@ textarea.form-control {
 
 .mc-back-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 1.45rem;
+  font-size: 2.6rem;
   font-weight: 800;
   color: #ffffff;
-  letter-spacing: 1px;
+  letter-spacing: 1.8px;
 }
 
 .mc-back-subtitle {
-  font-size: 0.8rem;
+  font-size: 1.4rem;
   color: #9cd4c9;
-  letter-spacing: 1.5px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
 }
 
 .mc-back-body {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
-  margin-top: 0.8rem;
+  grid-template-columns: 2.2fr 1fr;
+  gap: 2.8rem;
+  margin-top: 1.4rem;
 }
 
 .mc-terms-box {
-  font-size: 0.8rem;
+  font-size: 1.4rem;
   color: #cbd5e1;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .mc-terms-box h5 {
-  font-size: 0.88rem;
+  font-size: 1.6rem;
   color: #31d3b0;
-  margin-bottom: 0.4rem;
-  letter-spacing: 1px;
+  margin-bottom: 0.7rem;
+  letter-spacing: 1.8px;
   text-transform: uppercase;
 }
 
 .mc-terms-list {
-  padding-left: 1.1rem;
-  margin: 0.3rem 0;
+  padding-left: 2rem;
+  margin: 0.5rem 0;
 }
 
 .mc-terms-list li {
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.6rem;
 }
 
 .mc-contact-info {
-  margin-top: 0.8rem;
-  font-size: 0.78rem;
+  margin-top: 1.4rem;
+  font-size: 1.35rem;
   color: #94a3b8;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  padding-top: 0.6rem;
-  line-height: 1.4;
+  border-top: 2px solid rgba(255, 255, 255, 0.12);
+  padding-top: 1rem;
+  line-height: 1.5;
 }
 
 .mc-sign-box {
@@ -1150,19 +1151,19 @@ textarea.form-control {
 }
 
 .mc-seal-img {
-  width: 95px;
-  height: 95px;
+  width: 170px;
+  height: 170px;
   object-fit: contain;
   opacity: 0.9;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.4rem;
 }
 
 .mc-sign-line {
   width: 100%;
-  border-top: 2px dashed rgba(255, 255, 255, 0.4);
-  margin-top: 0.5rem;
-  padding-top: 0.3rem;
-  font-size: 0.8rem;
+  border-top: 3.5px dashed rgba(255, 255, 255, 0.4);
+  margin-top: 0.8rem;
+  padding-top: 0.5rem;
+  font-size: 1.4rem;
   color: #a8ded3;
   font-weight: 700;
 }
@@ -1798,16 +1799,12 @@ textarea.form-control {
   }
 
   .printable-card-area {
-    position: fixed !important;
-    left: 0 !important;
-    top: 0 !important;
     width: 85.6mm !important;
     height: 53.98mm !important;
     margin: 0 !important;
     padding: 0 !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
+    position: static !important;
+    display: block !important;
     background: none !important;
   }
 
@@ -1816,40 +1813,22 @@ textarea.form-control {
     height: 53.98mm !important;
     max-width: none !important;
     margin: 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
   }
 
   .master-card-canvas {
-    width: 85.6mm !important;
-    height: 53.98mm !important;
-    position: relative !important;
-    transform: none !important;
-    margin: 0 !important;
-    padding: 3mm 4mm 2.5mm !important;
+    width: 1536px !important;
+    height: 969px !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform-origin: top left !important;
+    transform: scale(0.210638) !important;
     box-shadow: none !important;
-    border-radius: 3mm !important;
+    border-radius: 20px !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     page-break-inside: avoid !important;
   }
-
-  .mc-org-logo { width: 18mm !important; height: 18mm !important; }
-  .mc-org-name { font-size: 8.5pt !important; }
-  .mc-org-sub { font-size: 4.8pt !important; }
-  .mc-org-address { font-size: 4.2pt !important; }
-  .mc-badge-type { font-size: 5.5pt !important; padding: 1.5mm 3mm !important; }
-  .mc-photo-box { width: 22mm !important; height: 25mm !important; border-radius: 3mm !important; }
-  .mc-member-name { font-size: 11pt !important; max-width: 48mm !important; }
-  .mc-member-id { font-size: 7.5pt !important; }
-  .mc-info-label { font-size: 4.5pt !important; }
-  .mc-info-val { font-size: 6pt !important; }
-  .mc-status-pill { font-size: 5.5pt !important; }
-  .mc-qr-box { width: 12mm !important; height: 12mm !important; padding: 1mm !important; }
-  
-  .mc-back-title { font-size: 8pt !important; }
-  .mc-back-subtitle { font-size: 4.8pt !important; }
-  .mc-terms-box { font-size: 4.5pt !important; }
-  .mc-terms-box h5 { font-size: 5pt !important; }
-  .mc-contact-info { font-size: 4.5pt !important; }
-  .mc-seal-img { width: 14mm !important; height: 14mm !important; }
-  .mc-sign-line { font-size: 4.5pt !important; }
 }

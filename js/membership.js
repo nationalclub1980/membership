@@ -2,6 +2,8 @@
  * DIGITAL MEMBERSHIP CARD GENERATOR & DOWNLOAD LOGIC
  */
 
+let currentCardSide = 'front';
+
 document.addEventListener('DOMContentLoaded', () => {
   const cardContainer = document.getElementById('digitalCardContainer');
   if (!cardContainer) return;
@@ -27,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initLookupForm();
   initCardActionButtons();
+  window.addEventListener('resize', updateCardScale);
 });
 
 /**
@@ -91,7 +94,19 @@ function escapeHtml(str) {
 }
 
 /**
-let currentCardSide = 'front';
+ * Dynamically updates CSS variable --card-scale for responsive Card Viewport
+ */
+function updateCardScale() {
+  const wrappers = document.querySelectorAll('.card-scale-wrapper');
+  wrappers.forEach(w => {
+    const wWidth = w.clientWidth;
+    if (wWidth > 0) {
+      const scale = wWidth / 1536;
+      w.style.setProperty('--card-scale', scale);
+      w.style.height = `${wWidth * (969 / 1536)}px`;
+    }
+  });
+}
 
 /**
  * Render HTML structure of the Master ID Card System (Front & Back)
@@ -131,7 +146,7 @@ function renderDigitalCard(member) {
       <!-- Master Card Viewport Container -->
       <div class="card-scale-wrapper">
         
-        <!-- FRONT SIDE MASTER CANVAS (856px x 540px) -->
+        <!-- FRONT SIDE MASTER CANVAS (1536px x 969px) -->
         <div class="master-card-canvas" id="membershipCardElement">
           <div class="diagonal-beam"></div>
           <div class="security-watermark"></div>
@@ -187,7 +202,7 @@ function renderDigitalCard(member) {
           </div>
         </div>
 
-        <!-- BACK SIDE MASTER CANVAS (856px x 540px) -->
+        <!-- BACK SIDE MASTER CANVAS (1536px x 969px) -->
         <div class="master-card-canvas" id="membershipCardBackElement" style="display: none;">
           <div class="diagonal-beam"></div>
           <div class="security-watermark"></div>
@@ -231,8 +246,9 @@ function renderDigitalCard(member) {
 
   container.innerHTML = cardHtml;
   currentCardSide = 'front';
+  updateCardScale();
 
-  // Render QR Codes on Front and Back
+  // Render high-resolution QR Codes on Front and Back
   setTimeout(() => {
     ['cardQrCodeFront', 'cardQrCodeBack'].forEach(id => {
       const qrEl = document.getElementById(id);
@@ -240,9 +256,9 @@ function renderDigitalCard(member) {
         qrEl.innerHTML = '';
         new QRCode(qrEl, {
           text: verifyUrl,
-          width: 140,
-          height: 140,
-          colorDark: "#0f172a",
+          width: 240,
+          height: 240,
+          colorDark: "#061d19",
           colorLight: "#ffffff",
           correctLevel: QRCode.CorrectLevel.H
         });
@@ -272,6 +288,7 @@ function toggleCardSide() {
     currentCardSide = 'front';
     if (toggleBtn) toggleBtn.innerHTML = '<span>🔄</span> Switch to Back Side';
   }
+  updateCardScale();
 }
 
 /**
@@ -327,7 +344,7 @@ function initCardActionButtons() {
 }
 
 /**
- * Master Canvas High-Resolution Capture Generator
+ * Master Canvas High-Resolution Capture Generator (1536x969 px)
  */
 async function getExportCardCanvas(targetId = 'membershipCardElement') {
   const targetEl = document.getElementById(targetId);
@@ -344,34 +361,47 @@ async function getExportCardCanvas(targetId = 'membershipCardElement') {
 
   // 2. Wait for custom web fonts to load completely
   if (document.fonts && document.fonts.ready) {
-    await document.fonts.ready;
+    try {
+      await document.fonts.ready;
+    } catch (e) {
+      console.warn('Font loading check non-fatal error:', e);
+    }
   }
 
-  // 3. Ensure all images inside target element are loaded before capture
-  const imgs = targetEl.querySelectorAll('img');
-  await Promise.all(Array.from(imgs).map(img => {
-    if (img.complete) return Promise.resolve();
+  // 3. Ensure all images inside target element are loaded completely before capture
+  const imgs = Array.from(targetEl.querySelectorAll('img'));
+  await Promise.all(imgs.map(img => {
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
     return new Promise(resolve => {
-      img.onload = resolve;
-      img.onerror = resolve;
+      let settled = false;
+      const done = () => {
+        if (!settled) {
+          settled = true;
+          resolve();
+        }
+      };
+      img.onload = done;
+      img.onerror = done;
+      setTimeout(done, 3000);
     });
   }));
 
-  await new Promise(r => setTimeout(r, 100));
+  await new Promise(r => setTimeout(r, 150));
 
-  // 4. Temporarily remove transform scaling and outer shadow for unscaled 856x540 capture
+  // 4. Temporarily remove transform scaling and outer shadow for 1536x969 capture
   const origTransform = targetEl.style.transform;
   const origShadow = targetEl.style.boxShadow;
   targetEl.style.transform = 'none';
-  targetEl.style.boxShadow = 'inset 0 0 0 2px rgba(255, 255, 255, 0.12)';
+  targetEl.style.boxShadow = 'none';
 
   let canvas;
   try {
     canvas = await html2canvas(targetEl, {
-      scale: 2, // 2x rendering of 856x540 master canvas = 1712x1080px (300+ DPI PVC card image)
+      scale: 1, // exact 1536x969 px master resolution output
       useCORS: true,
-      allowTaint: true,
+      allowTaint: false,
       backgroundColor: null,
+      imageTimeout: 15000,
       logging: false
     });
   } finally {
@@ -385,12 +415,12 @@ async function getExportCardCanvas(targetId = 'membershipCardElement') {
 }
 
 /**
- * Save Membership Card as high-resolution PNG Image (Front or Back based on active view)
+ * Save Membership Card as high-resolution PNG Image with Web Share API and Mobile Fallback
  */
 async function saveMembershipCard() {
   const memberIdText = (document.getElementById('displayMemberId')?.textContent || 'CARD').trim();
   const sideLabel = currentCardSide === 'back' ? 'Back' : 'Front';
-  const fileName = `${memberIdText}-Membership-Card-${sideLabel}.png`;
+  const fileName = `NASC-${memberIdText}-${sideLabel}.png`;
 
   showLoading(`Generating high-resolution ${sideLabel.toLowerCase()} card image...`);
 
@@ -400,12 +430,47 @@ async function saveMembershipCard() {
 
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1.0));
     if (!blob) {
-      throw new Error('Failed to create image Blob.');
+      throw new Error('Failed to generate image Blob.');
     }
 
     hideLoading();
 
-    // Direct Programmatic Browser Download via temporary <a> link
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
+
+    const file = new File([blob], fileName, { type: 'image/png' });
+
+    // 1. Web Share API with File sharing support (Mobile devices / iOS Safari / Android Chrome)
+    if (isMobile && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: `NASC Membership Card (${sideLabel})`,
+          text: `NASC Digital Membership Card for ${memberIdText}`
+        });
+        showToast("Choose Save Image or Save to Photos from the share menu.", "info");
+        return;
+      } catch (shareErr) {
+        if (shareErr.name === 'AbortError') {
+          // User cancelled/closed share sheet - do not show error
+          return;
+        }
+        console.warn('Web Share failed, falling back to direct method:', shareErr);
+      }
+    }
+
+    // 2. iOS Fallback for browsers without share support: Open image in new tab for long-press save
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS) {
+      const blobUrl = URL.createObjectURL(blob);
+      const newWin = window.open(blobUrl, '_blank');
+      if (!newWin) {
+        window.location.href = blobUrl;
+      }
+      showToast("Your membership card is ready. Long-press the image to save it.", "info");
+      return;
+    }
+
+    // 3. Desktop / Standard Download
     const objectUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = objectUrl;
@@ -413,14 +478,14 @@ async function saveMembershipCard() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
 
-    showToast(`Membership card ${sideLabel} PNG downloaded successfully!`, 'success');
+    showToast("Membership card download started.", "success");
 
   } catch (err) {
     console.error('Save card error:', err);
     hideLoading();
-    showToast('Could not generate membership card image. Please try Print / View Card.', 'danger');
+    showToast("Unable to generate the membership card. Please try again.", "danger");
   }
 }
 
@@ -429,7 +494,7 @@ async function saveMembershipCard() {
  */
 async function downloadPdfCard() {
   const memberIdText = (document.getElementById('displayMemberId')?.textContent || 'CARD').trim();
-  const fileName = `${memberIdText}-Membership-Card.pdf`;
+  const fileName = `NASC-${memberIdText}-Membership-Card.pdf`;
 
   showLoading('Generating 2-page print-ready PDF card (Front & Back)...');
 
@@ -467,13 +532,11 @@ async function downloadPdfCard() {
     pdf.save(fileName);
 
     hideLoading();
-    showToast('2-Page PDF membership card downloaded successfully!', 'success');
+    showToast("Membership card PDF download started.", "success");
 
   } catch (err) {
     console.error('PDF download error:', err);
     hideLoading();
-    showToast('Could not generate PDF. Please try Print / View Card instead.', 'danger');
+    showToast("Unable to generate the membership card PDF. Please try again.", "danger");
   }
 }
-
-
