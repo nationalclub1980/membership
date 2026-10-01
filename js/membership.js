@@ -91,8 +91,10 @@ function escapeHtml(str) {
 }
 
 /**
+let currentCardSide = 'front';
+
 /**
- * Render HTML structure of the Digital Card (Single Source of Truth)
+ * Render HTML structure of the Master ID Card System (Front & Back)
  */
 function renderDigitalCard(member) {
   const container = document.getElementById('digitalCardContainer');
@@ -116,87 +118,160 @@ function renderDigitalCard(member) {
   const safeCountry = escapeHtml(formatCountryDisplay(member.residenceCountry || member.country));
   const safeStatus = escapeHtml(member.status || 'Active');
 
-  // Single Source of Truth Card HTML
   const cardHtml = `
     <div class="printable-card-area">
-      <div class="digital-card" id="membershipCardElement">
-        <div class="diagonal"></div>
+      
+      <!-- Card Side Control Toolbar (Outside Card) -->
+      <div class="no-print" style="margin-bottom: 1.25rem; display: flex; gap: 0.75rem; justify-content: center;">
+        <button id="toggleCardSideBtn" class="btn btn-outline-primary btn-sm" onclick="toggleCardSide()">
+          <span>🔄</span> Switch to Back Side
+        </button>
+      </div>
+
+      <!-- Master Card Viewport Container -->
+      <div class="card-scale-wrapper">
         
-        <!-- Header -->
-        <div class="card-header-row">
-          <div class="card-org-branding">
-            <img src="${CONFIG.ORG_LOGO}" class="card-org-logo" alt="Logo" onerror="this.src='assets/club-logo.png'">
-            <div>
-              <div class="card-org-name">${CONFIG.ORG_NAME}</div>
-              <div class="card-org-sub">${CONFIG.ORG_TAGLINE}</div>
-              <div class="card-org-address">${CONFIG.ORG_ADDRESS}</div>
-            </div>
-          </div>
-          <span class="card-badge-type">${safeType}</span>
-        </div>
-
-        <!-- Body -->
-        <div class="card-body-row">
-          <div class="card-photo-box">
-            <img src="${photoSrc}" alt="${safeName}" onerror="this.src='assets/club-logo.png'">
-          </div>
+        <!-- FRONT SIDE MASTER CANVAS (856px x 540px) -->
+        <div class="master-card-canvas" id="membershipCardElement">
+          <div class="diagonal-beam"></div>
+          <div class="security-watermark"></div>
           
-          <div class="card-details-box">
-            <div class="card-member-name">${safeName}</div>
-            <div class="card-member-id">${safeId}</div>
+          <!-- Header -->
+          <div class="mc-header-row">
+            <div class="mc-org-branding">
+              <img src="${CONFIG.ORG_LOGO}" class="mc-org-logo" alt="Logo" onerror="this.src='assets/club-logo.png'">
+              <div>
+                <div class="mc-org-name">${CONFIG.ORG_NAME}</div>
+                <div class="mc-org-sub">${CONFIG.ORG_TAGLINE}</div>
+                <div class="mc-org-address">${CONFIG.ORG_ADDRESS}</div>
+              </div>
+            </div>
+            <span class="mc-badge-type">${safeType}</span>
+          </div>
+
+          <!-- Body -->
+          <div class="mc-body-row">
+            <div class="mc-photo-box">
+              <img src="${photoSrc}" alt="${safeName}" onerror="this.src='assets/club-logo.png'">
+            </div>
             
-            <div class="card-info-grid">
-              <div class="card-info-item">
-                <span class="card-info-label">NATIONALITY</span>
-                <span class="card-info-val">${safeNationality}</span>
+            <div class="mc-details-box">
+              <div class="mc-member-name">${safeName}</div>
+              <div class="mc-member-id">${safeId}</div>
+              
+              <div class="mc-info-grid">
+                <div class="mc-info-item">
+                  <span class="mc-info-label">NATIONALITY</span>
+                  <span class="mc-info-val">${safeNationality}</span>
+                </div>
+                <div class="mc-info-item">
+                  <span class="mc-info-label">RESIDENCE</span>
+                  <span class="mc-info-val">${safeCountry}</span>
+                </div>
+                <div class="mc-info-item">
+                  <span class="mc-info-label">JOINED</span>
+                  <span class="mc-info-val">${formatDate(member.joiningDate)}</span>
+                </div>
+                <div class="mc-info-item">
+                  <span class="mc-info-label">VALID UNTIL</span>
+                  <span class="mc-info-val">${formatDate(member.validUntil)}</span>
+                </div>
               </div>
-              <div class="card-info-item">
-                <span class="card-info-label">RESIDENCE</span>
-                <span class="card-info-val">${safeCountry}</span>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="mc-footer-row">
+            <span class="mc-status-pill">${safeStatus} MEMBER</span>
+            <div class="mc-qr-box" id="cardQrCodeFront" title="Scan to Verify"></div>
+          </div>
+        </div>
+
+        <!-- BACK SIDE MASTER CANVAS (856px x 540px) -->
+        <div class="master-card-canvas" id="membershipCardBackElement" style="display: none;">
+          <div class="diagonal-beam"></div>
+          <div class="security-watermark"></div>
+          
+          <!-- Back Header -->
+          <div class="mc-back-header">
+            <div>
+              <div class="mc-back-title">${CONFIG.ORG_NAME}</div>
+              <div class="mc-back-subtitle">OFFICIAL MEMBER CREDENTIAL & TERMS</div>
+            </div>
+            <span class="mc-badge-type" style="background: rgba(49, 211, 176, 0.2); color: #31d3b0; border-color: #31d3b0;">OFFICIAL ID</span>
+          </div>
+
+          <!-- Back Body -->
+          <div class="mc-back-body">
+            <div class="mc-terms-box">
+              <h5>MEMBERSHIP TERMS & CONDITIONS</h5>
+              <ol class="mc-terms-list">
+                <li>This card is non-transferable and remains official property of NASC.</li>
+                <li>Must be presented upon request to access club facilities, events, & voting.</li>
+                <li>If found, please return to: Millath Nagar, Udma Padinhar (P.O), Kasaragod - 671 319.</li>
+              </ol>
+              <div class="mc-contact-info">
+                <strong>President:</strong> ${CONFIG.PRESIDENT_NAME} (${CONFIG.PRESIDENT_PHONE})<br>
+                <strong>Secretary:</strong> ${CONFIG.SECRETARY_NAME} (${CONFIG.SECRETARY_PHONE})<br>
+                <strong>Email:</strong> ${CONFIG.ORG_EMAIL}
               </div>
-              <div class="card-info-item">
-                <span class="card-info-label">JOINED</span>
-                <span class="card-info-val">${formatDate(member.joiningDate)}</span>
-              </div>
-              <div class="card-info-item">
-                <span class="card-info-label">VALID UNTIL</span>
-                <span class="card-info-val">${formatDate(member.validUntil)}</span>
-              </div>
+            </div>
+
+            <div class="mc-sign-box">
+              <img src="assets/club-logo.png" class="mc-seal-img" alt="Official Seal">
+              <div class="mc-sign-line">AUTHORIZED SIGNATURE</div>
+              <div class="mc-qr-box" id="cardQrCodeBack" style="margin-top: 0.8rem;" title="Scan to Verify"></div>
             </div>
           </div>
         </div>
 
-        <!-- Footer -->
-        <div class="card-footer-row">
-          <span class="card-status-pill">${safeStatus} MEMBER</span>
-
-          <div class="card-qr-box" id="cardQrCode" title="Scan to Verify"></div>
-        </div>
       </div>
     </div>
   `;
 
   container.innerHTML = cardHtml;
+  currentCardSide = 'front';
 
-  // Cleanup old export container if present
-  const oldExport = document.getElementById('exportCardContainer');
-  if (oldExport) oldExport.remove();
-
-  // Generate high-density QR Code inside preview card
+  // Render QR Codes on Front and Back
   setTimeout(() => {
-    const qrEl = document.getElementById('cardQrCode');
-    if (qrEl && window.QRCode) {
-      qrEl.innerHTML = '';
-      new QRCode(qrEl, {
-        text: verifyUrl,
-        width: 120, // Render high resolution QR code inside 42px box
-        height: 120,
-        colorDark: "#0f172a",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
-    }
+    ['cardQrCodeFront', 'cardQrCodeBack'].forEach(id => {
+      const qrEl = document.getElementById(id);
+      if (qrEl && window.QRCode) {
+        qrEl.innerHTML = '';
+        new QRCode(qrEl, {
+          text: verifyUrl,
+          width: 140,
+          height: 140,
+          colorDark: "#0f172a",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+    });
   }, 100);
+}
+
+/**
+ * Toggle between Front and Back card views
+ */
+function toggleCardSide() {
+  const frontEl = document.getElementById('membershipCardElement');
+  const backEl = document.getElementById('membershipCardBackElement');
+  const toggleBtn = document.getElementById('toggleCardSideBtn');
+
+  if (!frontEl || !backEl) return;
+
+  if (currentCardSide === 'front') {
+    frontEl.style.display = 'none';
+    backEl.style.display = 'block';
+    currentCardSide = 'back';
+    if (toggleBtn) toggleBtn.innerHTML = '<span>🔄</span> Switch to Front Side';
+  } else {
+    backEl.style.display = 'none';
+    frontEl.style.display = 'block';
+    currentCardSide = 'front';
+    if (toggleBtn) toggleBtn.innerHTML = '<span>🔄</span> Switch to Back Side';
+  }
 }
 
 /**
@@ -252,22 +327,27 @@ function initCardActionButtons() {
 }
 
 /**
- * Single Source of Truth High-Resolution Canvas Generator
- * Captures the exact preview card (#membershipCardElement) DOM element without layout mutation or outer shadow padding.
+ * Master Canvas High-Resolution Capture Generator
  */
-async function getExportCardCanvas() {
-  const targetEl = document.getElementById('membershipCardElement');
+async function getExportCardCanvas(targetId = 'membershipCardElement') {
+  const targetEl = document.getElementById(targetId);
 
   if (!targetEl) {
-    throw new Error('Membership card element #membershipCardElement not found');
+    throw new Error(`Membership card element #${targetId} not found`);
   }
 
-  // 1. Wait for custom web fonts to load completely
+  // 1. Ensure element is temporarily visible for capture if hidden
+  const origDisplay = targetEl.style.display;
+  if (origDisplay === 'none') {
+    targetEl.style.display = 'block';
+  }
+
+  // 2. Wait for custom web fonts to load completely
   if (document.fonts && document.fonts.ready) {
     await document.fonts.ready;
   }
 
-  // 2. Ensure all images (photo, logo) inside target element are loaded before capture
+  // 3. Ensure all images inside target element are loaded before capture
   const imgs = targetEl.querySelectorAll('img');
   await Promise.all(Array.from(imgs).map(img => {
     if (img.complete) return Promise.resolve();
@@ -277,66 +357,46 @@ async function getExportCardCanvas() {
     });
   }));
 
-  // Short delay to ensure QR canvas element is fully flushed
   await new Promise(r => setTimeout(r, 100));
 
-  // 3. Measure exact rendered bounding client rectangle of the card
-  const rect = targetEl.getBoundingClientRect();
-
-  // 4. Temporarily disable outer drop-shadow to prevent html2canvas from expanding canvas bounds
+  // 4. Temporarily remove transform scaling and outer shadow for unscaled 856x540 capture
+  const origTransform = targetEl.style.transform;
   const origShadow = targetEl.style.boxShadow;
-  targetEl.style.boxShadow = 'inset 0 0 0 1px rgba(255, 255, 255, 0.12)';
+  targetEl.style.transform = 'none';
+  targetEl.style.boxShadow = 'inset 0 0 0 2px rgba(255, 255, 255, 0.12)';
 
   let canvas;
   try {
-    // Capture the EXACT preview card DOM element tightly
     canvas = await html2canvas(targetEl, {
-      scale: 3, // 3x high-resolution export for ultra-sharp output
+      scale: 2, // 2x rendering of 856x540 master canvas = 1712x1080px (300+ DPI PVC card image)
       useCORS: true,
       allowTaint: true,
       backgroundColor: null,
       logging: false
     });
   } finally {
-    // Restore original card styling
+    // Restore original styling and display
+    targetEl.style.transform = origTransform;
     targetEl.style.boxShadow = origShadow;
-  }
-
-  // Developer aspect ratio validation check
-  const previewRatio = rect.width / rect.height;
-  const exportRatio = canvas.width / canvas.height;
-  const diff = Math.abs(previewRatio - exportRatio);
-
-  console.log('Single Source of Truth Aspect Ratio Check:', {
-    previewWidth: rect.width,
-    previewHeight: rect.height,
-    previewRatio: previewRatio.toFixed(4),
-    exportWidth: canvas.width,
-    exportHeight: canvas.height,
-    exportRatio: exportRatio.toFixed(4),
-    difference: diff.toFixed(4)
-  });
-
-  if (diff > 0.02) {
-    console.warn(`Aspect ratio mismatch warning: Preview ${previewRatio.toFixed(3)} vs Export ${exportRatio.toFixed(3)} (Diff: ${diff.toFixed(3)})`);
+    targetEl.style.display = origDisplay;
   }
 
   return canvas;
 }
 
 /**
- * Primary Action: Save Membership Card as high-resolution PNG Image
- * Directly triggers browser download to the Downloads folder.
- * Does NOT open Windows Photos, Photo Edit, or new tabs.
+ * Save Membership Card as high-resolution PNG Image (Front or Back based on active view)
  */
 async function saveMembershipCard() {
   const memberIdText = (document.getElementById('displayMemberId')?.textContent || 'CARD').trim();
-  const fileName = `${memberIdText}-Membership-Card.png`;
+  const sideLabel = currentCardSide === 'back' ? 'Back' : 'Front';
+  const fileName = `${memberIdText}-Membership-Card-${sideLabel}.png`;
 
-  showLoading('Generating high-resolution membership card image...');
+  showLoading(`Generating high-resolution ${sideLabel.toLowerCase()} card image...`);
 
   try {
-    const canvas = await getExportCardCanvas();
+    const targetId = currentCardSide === 'back' ? 'membershipCardBackElement' : 'membershipCardElement';
+    const canvas = await getExportCardCanvas(targetId);
 
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1.0));
     if (!blob) {
@@ -355,7 +415,7 @@ async function saveMembershipCard() {
     document.body.removeChild(link);
     setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
 
-    showToast('Membership card PNG downloaded successfully!', 'success');
+    showToast(`Membership card ${sideLabel} PNG downloaded successfully!`, 'success');
 
   } catch (err) {
     console.error('Save card error:', err);
@@ -365,19 +425,20 @@ async function saveMembershipCard() {
 }
 
 /**
- * Secondary Action: Download Membership Card as PDF document
- * Uses html2canvas + jsPDF to generate custom borderless card PDF document.
+ * Download Membership Card as 2-Page CR80 PDF Document (Front & Back)
  */
 async function downloadPdfCard() {
   const memberIdText = (document.getElementById('displayMemberId')?.textContent || 'CARD').trim();
   const fileName = `${memberIdText}-Membership-Card.pdf`;
 
-  showLoading('Generating printable PDF card...');
+  showLoading('Generating 2-page print-ready PDF card (Front & Back)...');
 
   try {
-    const canvas = await getExportCardCanvas();
+    const frontCanvas = await getExportCardCanvas('membershipCardElement');
+    const backCanvas = await getExportCardCanvas('membershipCardBackElement');
 
-    const imgData = canvas.toDataURL('image/png', 1.0);
+    const frontImgData = frontCanvas.toDataURL('image/png', 1.0);
+    const backImgData = backCanvas.toDataURL('image/png', 1.0);
     const { jsPDF } = window.jspdf || {};
 
     if (!jsPDF) {
@@ -386,22 +447,27 @@ async function downloadPdfCard() {
       return;
     }
 
-    // Standard card base width in mm
-    const pdfWidth = 85.6;
-    // Calculate exact PDF height in mm matching the canvas aspect ratio precisely (no distortion, no white margins)
-    const pdfHeight = Number((pdfWidth / (canvas.width / canvas.height)).toFixed(2));
+    // Standard CR80 Card landscape dimensions (85.60mm x 53.98mm)
+    const pdfWidth = 85.60;
+    const pdfHeight = 53.98;
 
     const pdf = new jsPDF({
-      orientation: canvas.width >= canvas.height ? 'landscape' : 'portrait',
+      orientation: 'landscape',
       unit: 'mm',
       format: [pdfWidth, pdfHeight]
     });
 
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    // Page 1: Front Side Card
+    pdf.addImage(frontImgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+    // Page 2: Back Side Card
+    pdf.addPage([pdfWidth, pdfHeight], 'landscape');
+    pdf.addImage(backImgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
     pdf.save(fileName);
 
     hideLoading();
-    showToast('PDF membership card downloaded successfully!', 'success');
+    showToast('2-Page PDF membership card downloaded successfully!', 'success');
 
   } catch (err) {
     console.error('PDF download error:', err);
@@ -409,4 +475,5 @@ async function downloadPdfCard() {
     showToast('Could not generate PDF. Please try Print / View Card instead.', 'danger');
   }
 }
+
 
