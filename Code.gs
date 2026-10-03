@@ -102,12 +102,7 @@ function doPost(e) {
     } else if (action === 'verifyAndRegister' || action === 'verifyPayment' || action === 'verify_and_register') {
       responseData = verifyAndProcessRegistration(payload);
     } else if (action === 'register') {
-      // Requirement 9: Reject unverified registration attempts
-      responseData = {
-        status: 'error',
-        success: false,
-        message: 'Direct registration disabled. Payment must be completed via Razorpay first.'
-      };
+      responseData = registerMemberDirect(payload);
     } else if (action === 'adminLogin' || action === 'login') {
       responseData = verifyAdminLogin(payload.pin);
     } else if (action === 'getAdminData' || action === 'adminData') {
@@ -384,6 +379,123 @@ function verifyAndProcessRegistration(data) {
   return {
     status: 'success',
     message: 'Payment verified and membership application processed successfully!',
+    data: memberRecord
+  };
+}
+
+/**
+ * Direct Member Registration (Without requiring Razorpay payment)
+ */
+function registerMemberDirect(memberData) {
+  if (!memberData || !memberData.fullName) {
+    return {
+      status: 'error',
+      success: false,
+      message: 'Full Name is required for registration.'
+    };
+  }
+
+  const sheet = getOrCreateSheet();
+  const nextId = generateNextMembershipId(sheet);
+
+  let photoUrl = "";
+  if (memberData.photoBase64) {
+    photoUrl = saveFileToDrive(memberData.photoBase64, `${nextId}_photo`, CONFIG.PHOTOS_FOLDER_NAME, CONFIG.PHOTOS_FOLDER_ID);
+  } else if (memberData.photoUrl) {
+    photoUrl = memberData.photoUrl;
+  }
+
+  const joiningDate = new Date(memberData.joiningDate || new Date());
+  const validFrom = formatDate(joiningDate);
+  
+  const validUntilDate = new Date(joiningDate);
+  validUntilDate.setFullYear(validUntilDate.getFullYear() + (CONFIG.VALIDITY_YEARS || 1));
+  const validUntil = formatDate(validUntilDate);
+
+  const timestamp = new Date().toISOString();
+  const status = "Active";
+  const cardUrl = "";
+  const registrationType = memberData.registrationType || "New Member";
+  const nationality = memberData.nationality || "Indian";
+  const residenceCountry = memberData.residenceCountry || "India";
+  const termsAccepted = memberData.termsAccepted !== false;
+  const termsAcceptedAt = memberData.termsAcceptedAt || timestamp;
+
+  const paymentAmount = getMembershipFeeAmount(memberData.membershipType);
+  const paymentStatus = "Direct Registration";
+  const paymentId = "DIRECT_REG";
+  const orderId = "N/A";
+
+  const rowData = [
+    nextId,
+    memberData.fullName || '',
+    photoUrl,
+    memberData.dob || '',
+    memberData.gender || '',
+    memberData.phone || '',
+    memberData.whatsapp || '',
+    memberData.email || '',
+    memberData.address || '',
+    memberData.district || '',
+    memberData.state || '',
+    memberData.pinCode || '',
+    memberData.bloodGroup || '',
+    memberData.membershipType || 'Adult Membership',
+    formatDate(joiningDate),
+    validFrom,
+    validUntil,
+    timestamp,
+    status,
+    cardUrl,
+    registrationType,
+    nationality,
+    residenceCountry,
+    termsAccepted ? "Yes" : "No",
+    termsAcceptedAt,
+    paymentStatus,
+    paymentId,
+    orderId,
+    paymentAmount
+  ];
+
+  sheet.appendRow(rowData);
+
+  const memberRecord = {
+    membershipId: nextId,
+    fullName: memberData.fullName,
+    photoUrl: photoUrl,
+    photoBase64: photoUrl,
+    dob: memberData.dob,
+    gender: memberData.gender,
+    nationality: nationality,
+    residenceCountry: residenceCountry,
+    phone: memberData.phone,
+    whatsapp: memberData.whatsapp,
+    email: memberData.email,
+    address: memberData.address,
+    district: memberData.district,
+    state: memberData.state,
+    pinCode: memberData.pinCode,
+    bloodGroup: memberData.bloodGroup,
+    membershipType: memberData.membershipType || 'Adult Membership',
+    joiningDate: formatDate(joiningDate),
+    validFrom: validFrom,
+    validUntil: validUntil,
+    registrationTimestamp: timestamp,
+    status: status,
+    registrationType: registrationType,
+    termsAccepted: termsAccepted,
+    termsAcceptedAt: termsAcceptedAt,
+    paymentStatus: paymentStatus,
+    paymentId: paymentId,
+    orderId: orderId,
+    paymentAmount: paymentAmount
+  };
+
+  return {
+    status: 'success',
+    success: true,
+    message: 'Member registered successfully!',
     data: memberRecord
   };
 }
