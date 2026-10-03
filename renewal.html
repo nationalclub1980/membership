@@ -7,6 +7,7 @@
   <meta name="description" content="Renew your official membership for National Arts & Sports Club and update your digital membership card.">
   <link rel="icon" type="image/png" href="assets/club-logo.png">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
 
@@ -70,18 +71,17 @@
         
         <!-- Profile Photo Upload Box -->
         <div class="form-group" style="margin-bottom: 2rem;">
-          <label class="form-label" for="profilePhoto">Profile Photo <span class="required-asterisk">*</span></label>
+          <label class="form-label" for="profilePhoto">Profile Photo <span style="font-size: 0.8rem; color: var(--slate-500); font-weight: normal;">(Optional for renewal — leave blank to keep existing photo)</span></label>
           <div class="photo-upload-zone" id="photoDropzone">
-            <input type="file" id="profilePhoto" accept="image/jpeg,image/png,image/webp" class="photo-upload-input" required>
+            <input type="file" id="profilePhoto" accept="image/jpeg,image/png,image/webp" class="photo-upload-input">
             <div class="photo-preview-container">
               <img id="photoPreview" src="assets/user-placeholder.svg" class="photo-preview-img" alt="Preview" style="display: none;" onerror="this.src='assets/user-placeholder.svg'">
               <div>
-                <p id="photoUploadText" style="font-weight: 600; color: var(--primary-700);">📷 Click or drag photo here to upload</p>
+                <p id="photoUploadText" style="font-weight: 600; color: var(--primary-700);">📷 Click or drag new photo here to update</p>
                 <p class="form-hint">Accepted formats: JPG, PNG, WEBP (Max 5MB)</p>
               </div>
             </div>
           </div>
-          <div class="invalid-feedback">Profile photo is required.</div>
         </div>
 
         <div class="form-grid">
@@ -295,8 +295,10 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/crop-modal.js"></script>
   <script src="js/registration.js"></script>
 </body>
 </html>

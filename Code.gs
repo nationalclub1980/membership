@@ -818,10 +818,13 @@ function saveFileToDrive(base64Data, filename, folderName, folderId) {
  * Helper: Map Sheet Row to Member Object
  */
 function mapRowToObject(row) {
+  const photoVal = row[2] || '';
   return {
     membershipId: row[0],
     fullName: row[1],
-    photoUrl: row[2],
+    photoUrl: photoVal,
+    photoBase64: photoVal,
+    photo: photoVal,
     dob: row[3],
     gender: row[4],
     phone: row[5],

@@ -85,19 +85,19 @@ function initFormDefaults() {
  * Handle Photo Upload Preview and Convert to Base64
  */
 let uploadedPhotoBase64 = '';
+let rawOriginalPhotoBase64 = '';
 
 function initPhotoPreview() {
   const photoInput = document.getElementById('profilePhoto');
   const previewImg = document.getElementById('photoPreview');
   const uploadText = document.getElementById('photoUploadText');
+  const dropzone = document.getElementById('photoDropzone');
 
   if (!photoInput) return;
 
-  photoInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
+  const handleFileSelect = (file) => {
     if (!file) return;
 
-    // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       showToast('Please upload a valid image file (JPG, PNG, WEBP)', 'danger');
@@ -105,8 +105,7 @@ function initPhotoPreview() {
       return;
     }
 
-    // Validate size (max 5MB)
-    const maxSizeMB = 5;
+    const maxSizeMB = 10;
     if (file.size > maxSizeMB * 1024 * 1024) {
       showToast(`Image file size must be less than ${maxSizeMB}MB`, 'danger');
       photoInput.value = '';
@@ -115,19 +114,66 @@ function initPhotoPreview() {
 
     const reader = new FileReader();
     reader.onload = (evt) => {
-      compressImage(evt.target.result, 600, 600, 0.8, (compressedBase64) => {
-        uploadedPhotoBase64 = compressedBase64;
+      rawOriginalPhotoBase64 = evt.target.result;
+      
+      // Immediately open Passport Photo Crop Modal
+      openPhotoCropModal(rawOriginalPhotoBase64, (croppedBase64) => {
+        uploadedPhotoBase64 = croppedBase64;
         if (previewImg) {
           previewImg.src = uploadedPhotoBase64;
           previewImg.style.display = 'block';
         }
         if (uploadText) {
-          uploadText.textContent = `Selected: ${file.name}`;
+          uploadText.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.35rem;">
+              <span style="color: var(--emerald-600, #059669); font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.35rem;">
+                <span>✓</span> Photo Ready
+              </span>
+              <span style="font-size: 0.8rem; color: var(--slate-500);">Recommended: passport-style portrait photo</span>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="reopenCropModal()" style="margin-top: 0.4rem; padding: 0.3rem 0.75rem; font-size: 0.82rem;">
+                ✏️ Change / Recrop Photo
+              </button>
+            </div>
+          `;
         }
       });
     };
     reader.readAsDataURL(file);
+  };
+
+  photoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    handleFileSelect(file);
   });
+
+  if (dropzone) {
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('dragover');
+    });
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+  }
+}
+
+function reopenCropModal() {
+  if (rawOriginalPhotoBase64) {
+    openPhotoCropModal(rawOriginalPhotoBase64, (croppedBase64) => {
+      uploadedPhotoBase64 = croppedBase64;
+      const previewImg = document.getElementById('photoPreview');
+      if (previewImg) previewImg.src = croppedBase64;
+    });
+  } else {
+    document.getElementById('profilePhoto')?.click();
+  }
 }
 
 /**
@@ -269,9 +315,10 @@ function initFormValidation(form) {
       if (termsFeedback) termsFeedback.style.display = 'none';
     }
 
-    // Photo check
-    if (!uploadedPhotoBase64) {
-      showToast('Please upload a profile photo before submitting', 'danger');
+    // Photo check (Required for new registrations; optional for renewal)
+    const registrationType = form.dataset.registrationType || 'New Member';
+    if (!uploadedPhotoBase64 && registrationType !== 'Renewal') {
+      showToast('Please upload and confirm a profile photo before submitting', 'danger');
       isValid = false;
     }
 
@@ -331,14 +378,15 @@ function initFormValidation(form) {
 
         if (result.status === 'success') {
           registeredMember = result.data || {};
+          const backendPhoto = registeredMember.photoUrl || registeredMember.photoBase64 || registeredMember.photo || '';
+          registeredMember.photoUrl = backendPhoto || uploadedPhotoBase64;
+          registeredMember.photoBase64 = registeredMember.photoUrl;
+          registeredMember.photo = registeredMember.photoUrl;
           registeredMember.nationality = registeredMember.nationality || nationality;
           registeredMember.residenceCountry = registeredMember.residenceCountry || residenceCountry;
           registeredMember.country = registeredMember.residenceCountry;
           registeredMember.termsAccepted = true;
           registeredMember.termsAcceptedAt = termsAcceptedAt;
-          if (uploadedPhotoBase64) {
-            registeredMember.photoBase64 = uploadedPhotoBase64;
-          }
         } else {
           throw new Error(result.message || 'Registration failed on backend server.');
         }

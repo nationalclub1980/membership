@@ -1871,3 +1871,165 @@ textarea.form-control {
     page-break-inside: avoid !important;
   }
 }
+
+/* ==========================================================================
+   PASSPORT PHOTO CROP & CUSTOMIZATION MODAL STYLES
+   ========================================================================== */
+.crop-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10500;
+  background-color: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.crop-modal-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.crop-modal-card {
+  background: var(--surface-card, #ffffff);
+  border-radius: 1.25rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  width: 100%;
+  max-width: 560px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.crop-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--slate-50, #f8fafc);
+}
+
+.crop-modal-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--slate-900, #0f172a);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crop-modal-subtitle {
+  font-size: 0.82rem;
+  color: var(--slate-500, #64748b);
+  margin-top: 0.2rem;
+}
+
+.crop-modal-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.crop-stage-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  height: 380px;
+  background-color: #090d16;
+  border-radius: var(--radius-md, 12px);
+  overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.crop-stage-wrapper img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Face positioning overlay guide */
+.crop-face-guide-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.65;
+  transition: opacity 0.2s ease;
+}
+
+.crop-face-guide-svg {
+  width: 70%;
+  height: 85%;
+  stroke: #38bdf8;
+  stroke-dasharray: 4 4;
+  stroke-width: 2;
+  fill: none;
+}
+
+.crop-controls-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background: var(--slate-50, #f8fafc);
+  padding: 1rem;
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.crop-control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.crop-slider-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--slate-700, #334155);
+  min-width: 45px;
+}
+
+.crop-zoom-slider {
+  flex-grow: 1;
+  max-width: 240px;
+  accent-color: var(--primary-600, #2563eb);
+}
+
+.crop-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  background: var(--slate-50, #f8fafc);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* Cropper.js customization override */
+.cropper-view-box {
+  outline: 2px solid #38bdf8 !important;
+  outline-color: rgba(56, 189, 248, 0.8) !important;
+  border-radius: 4px;
+}
+.cropper-line, .cropper-point {
+  background-color: #38bdf8 !important;
+}

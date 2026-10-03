@@ -949,10 +949,11 @@ function handleEditPhotoChange(e) {
 
   const reader = new FileReader();
   reader.onload = (evt) => {
-    compressImage(evt.target.result, 600, 600, 0.8, (compressed) => {
-      editNewPhotoBase64 = compressed;
+    // Open Passport Photo Crop Modal for Admin
+    openPhotoCropModal(evt.target.result, (croppedBase64) => {
+      editNewPhotoBase64 = croppedBase64;
       const preview = document.getElementById('editPhotoPreview');
-      if (preview) preview.src = compressed;
+      if (preview) preview.src = croppedBase64;
     });
   };
   reader.readAsDataURL(file);
