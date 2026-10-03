@@ -620,6 +620,14 @@ function updateMemberRecord(payload) {
       const data = payload.memberData || {};
       
       if (data.fullName !== undefined) sheet.getRange(rowNum, 2).setValue(data.fullName);
+      if (data.photoBase64) {
+        const newPhotoUrl = saveFileToDrive(data.photoBase64, `${targetId}_photo_${Date.now()}`, CONFIG.PHOTOS_FOLDER_NAME, CONFIG.PHOTOS_FOLDER_ID);
+        if (newPhotoUrl) {
+          sheet.getRange(rowNum, 3).setValue(newPhotoUrl);
+        }
+      } else if (data.photoUrl !== undefined) {
+        sheet.getRange(rowNum, 3).setValue(data.photoUrl);
+      }
       if (data.dob !== undefined) sheet.getRange(rowNum, 4).setValue(data.dob);
       if (data.gender !== undefined) sheet.getRange(rowNum, 5).setValue(data.gender);
       if (data.phone !== undefined) sheet.getRange(rowNum, 6).setValue(data.phone);
