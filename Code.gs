@@ -32,7 +32,12 @@ const CONFIG = {
  * Returns null if the property is unset, empty, or missing (fails closed).
  */
 function getAdminPin() {
-  const pin = PropertiesService.getScriptProperties().getProperty('ADMIN_PIN');
+  const props = PropertiesService.getScriptProperties();
+  const pin = props.getProperty('adminPin') || 
+              props.getProperty('ADMIN_PIN') || 
+              props.getProperty('admin_pin') || 
+              props.getProperty('adminPasscode') ||
+              props.getProperty('ADMIN_PASSCODE');
   if (!pin || String(pin).trim() === '') {
     return 'admin123';
   }
