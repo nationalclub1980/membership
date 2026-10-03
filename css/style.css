@@ -782,6 +782,13 @@ textarea.form-control {
   height: 100%;
   opacity: 0;
   cursor: pointer;
+  z-index: 1;
+}
+
+.photo-upload-zone button,
+.photo-upload-zone a {
+  position: relative;
+  z-index: 10;
 }
 
 /* Digital Membership Card Styles (Premium Corporate Layout) */

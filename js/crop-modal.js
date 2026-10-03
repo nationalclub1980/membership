@@ -98,9 +98,19 @@ function openPhotoCropModal(imageSrc, onConfirm, onCancel) {
   modal.classList.add('active');
 
   // Initialize Cropper.js when image is ready
+  let retryCount = 0;
   const initCropper = () => {
     if (typeof Cropper === 'undefined') {
-      console.warn('Cropper.js library not loaded yet, retrying...');
+      retryCount++;
+      if (retryCount > 25) {
+        if (typeof showToast === 'function') {
+          showToast('Photo editor could not be loaded. Please refresh the page and try again.', 'danger');
+        } else {
+          alert('Photo editor could not be loaded. Please refresh the page and try again.');
+        }
+        closePhotoCropModal();
+        return;
+      }
       setTimeout(initCropper, 100);
       return;
     }
@@ -151,16 +161,23 @@ function openPhotoCropModal(imageSrc, onConfirm, onCancel) {
     });
 
     if (!canvas) {
-      alert('Failed to process cropped photo. Please try again.');
+      if (typeof showToast === 'function') {
+        showToast('Photo processing failed. Please adjust the crop area and try again.', 'danger');
+      } else {
+        alert('Photo processing failed. Please adjust the crop area and try again.');
+      }
       return;
     }
 
     const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
 
-    closePhotoCropModal();
-    if (typeof onConfirm === 'function') {
-      onConfirm(croppedBase64);
-    }
+    canvas.toBlob((blob) => {
+      const croppedFile = blob ? new File([blob], "membership-passport-photo.jpg", { type: "image/jpeg" }) : null;
+      closePhotoCropModal();
+      if (typeof onConfirm === 'function') {
+        onConfirm(croppedBase64, croppedFile, blob);
+      }
+    }, 'image/jpeg', 0.9);
   };
 
   // Cancel Handler hook

@@ -85,6 +85,7 @@ function initFormDefaults() {
  * Handle Photo Upload Preview and Convert to Base64
  */
 let uploadedPhotoBase64 = '';
+let uploadedPhotoFile = null;
 let rawOriginalPhotoBase64 = '';
 
 function initPhotoPreview() {
@@ -99,7 +100,7 @@ function initPhotoPreview() {
     if (!file) return;
 
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
+    if (!file.type || !validTypes.includes(file.type.toLowerCase())) {
       showToast('Please upload a valid image file (JPG, PNG, WEBP)', 'danger');
       photoInput.value = '';
       return;
@@ -116,23 +117,29 @@ function initPhotoPreview() {
     reader.onload = (evt) => {
       rawOriginalPhotoBase64 = evt.target.result;
       
-      // Immediately open Passport Photo Crop Modal
-      openPhotoCropModal(rawOriginalPhotoBase64, (croppedBase64) => {
+      // Open Passport Photo Crop Modal
+      openPhotoCropModal(rawOriginalPhotoBase64, (croppedBase64, croppedFile) => {
         uploadedPhotoBase64 = croppedBase64;
+        uploadedPhotoFile = croppedFile;
         if (previewImg) {
           previewImg.src = uploadedPhotoBase64;
           previewImg.style.display = 'block';
         }
         if (uploadText) {
           uploadText.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.35rem;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.35rem; position: relative; z-index: 10;">
               <span style="color: var(--emerald-600, #059669); font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.35rem;">
                 <span>✓</span> Photo Ready
               </span>
-              <span style="font-size: 0.8rem; color: var(--slate-500);">Recommended: passport-style portrait photo</span>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="reopenCropModal()" style="margin-top: 0.4rem; padding: 0.3rem 0.75rem; font-size: 0.82rem;">
-                ✏️ Change / Recrop Photo
-              </button>
+              <span style="font-size: 0.8rem; color: var(--slate-500);">Passport-style 3:4 portrait photo</span>
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.4rem; flex-wrap: wrap; justify-content: center;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="reopenCropModal(event)" style="padding: 0.3rem 0.75rem; font-size: 0.82rem; position: relative; z-index: 10;">
+                  ✏️ Recrop Photo
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="triggerPhotoFileInput(event)" style="padding: 0.3rem 0.75rem; font-size: 0.82rem; position: relative; z-index: 10;">
+                  📁 Choose Different File
+                </button>
+              </div>
             </div>
           `;
         }
@@ -164,15 +171,23 @@ function initPhotoPreview() {
   }
 }
 
-function reopenCropModal() {
+function triggerPhotoFileInput(e) {
+  if (e) e.stopPropagation();
+  const input = document.getElementById('profilePhoto');
+  if (input) input.click();
+}
+
+function reopenCropModal(e) {
+  if (e) e.stopPropagation();
   if (rawOriginalPhotoBase64) {
-    openPhotoCropModal(rawOriginalPhotoBase64, (croppedBase64) => {
+    openPhotoCropModal(rawOriginalPhotoBase64, (croppedBase64, croppedFile) => {
       uploadedPhotoBase64 = croppedBase64;
+      uploadedPhotoFile = croppedFile;
       const previewImg = document.getElementById('photoPreview');
       if (previewImg) previewImg.src = croppedBase64;
     });
   } else {
-    document.getElementById('profilePhoto')?.click();
+    triggerPhotoFileInput(e);
   }
 }
 
@@ -329,8 +344,6 @@ function initFormValidation(form) {
       return;
     }
 
-    // Detect registration type (New Member vs Renewal)
-    const registrationType = form.dataset.registrationType || 'New Member';
     const termsAcceptedAt = new Date().toISOString();
 
     // Prepare payload
