@@ -397,6 +397,9 @@ function registerMemberDirect(memberData) {
   let photoUrl = "";
   if (memberData.photoBase64) {
     photoUrl = saveFileToDrive(memberData.photoBase64, `${nextId}_photo`, CONFIG.PHOTOS_FOLDER_NAME, CONFIG.PHOTOS_FOLDER_ID);
+    if (!photoUrl) {
+      photoUrl = memberData.photoBase64;
+    }
   } else if (memberData.photoUrl) {
     photoUrl = memberData.photoUrl;
   }
@@ -769,22 +772,34 @@ function updateMemberRecord(payload) {
  * Save Base64 File to Google Drive Folder
  */
 function saveFileToDrive(base64Data, filename, folderName, folderId) {
+  if (!base64Data) return "";
   try {
-    let folder;
+    let folder = null;
     if (folderId) {
-      folder = DriveApp.getFolderById(folderId);
-    } else {
-      const folders = DriveApp.getFoldersByName(folderName);
+      try {
+        folder = DriveApp.getFolderById(folderId);
+      } catch (e) {
+        folder = null;
+      }
+    }
+    if (!folder) {
+      const targetName = folderName || "Member Photos";
+      const folders = DriveApp.getFoldersByName(targetName);
       if (folders.hasNext()) {
         folder = folders.next();
       } else {
-        folder = DriveApp.createFolder(folderName);
+        folder = DriveApp.createFolder(targetName);
       }
     }
 
-    const parts = base64Data.split(';base64,');
-    const contentType = parts[0].replace('data:', '');
-    const decoded = Utilities.base64Decode(parts[1]);
+    let rawBase64 = base64Data;
+    let contentType = 'image/jpeg';
+    if (base64Data.indexOf(';base64,') !== -1) {
+      const parts = base64Data.split(';base64,');
+      contentType = parts[0].replace('data:', '');
+      rawBase64 = parts[1];
+    }
+    const decoded = Utilities.base64Decode(rawBase64);
     const blob = Utilities.newBlob(decoded, contentType, filename);
 
     const file = folder.createFile(blob);
