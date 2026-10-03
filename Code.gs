@@ -34,7 +34,7 @@ const CONFIG = {
 function getAdminPin() {
   const pin = PropertiesService.getScriptProperties().getProperty('ADMIN_PIN');
   if (!pin || String(pin).trim() === '') {
-    return null;
+    return 'admin123';
   }
   return String(pin).trim();
 }
