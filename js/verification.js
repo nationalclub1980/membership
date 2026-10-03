@@ -105,7 +105,7 @@ function renderVerificationSuccess(data) {
       </div>
 
       <div style="display: flex; gap: 1.5rem; align-items: center; justify-content: center; flex-wrap: wrap; margin: 1.5rem 0; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
-        <img src="${data.photoUrl || CONFIG.ORG_LOGO}" alt="${data.fullName}" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-500); box-shadow: var(--shadow-md);">
+        <img src="${formatDriveImageUrl(data.photoUrl || data.photoBase64 || data.photo)}" alt="${escapeHtml(data.fullName)}" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-500); box-shadow: var(--shadow-md);" onerror="this.src='assets/user-placeholder.svg'">
         <div>
           <h3 style="font-size: 1.4rem; color: var(--slate-900);">${data.fullName}</h3>
           <div style="font-family: monospace; font-size: 1.1rem; color: var(--primary-600); font-weight: 700;">${data.membershipId}</div>

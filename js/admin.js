@@ -181,8 +181,9 @@ function renderAdminDashboard(members) {
     const regTypeBadgeClass = regType === 'Renewal' ? 'badge-renewal' : 'badge-new';
     const isChecked = selectedMemberIds.has(m.membershipId) ? 'checked' : '';
 
-    const photoUrl = formatDriveImageUrl(m.photoUrl);
-    const photoLink = m.photoUrl ? `<a href="${m.photoUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.55rem;">🔗 View Link</a>` : '<span style="color: var(--slate-400); font-size: 0.8rem;">No Photo</span>';
+    const rawPhoto = m.photoUrl || m.photoBase64 || m.photo || '';
+    const photoUrl = formatDriveImageUrl(rawPhoto);
+    const photoLink = (rawPhoto && rawPhoto !== 'assets/club-logo.png') ? `<a href="${photoUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.55rem;">🔗 View Link</a>` : '<span style="color: var(--slate-400); font-size: 0.8rem;">No Photo</span>';
 
     return `
       <tr>
@@ -193,11 +194,11 @@ function renderAdminDashboard(members) {
         <td>
           <img 
             src="${photoUrl}" 
-            alt="${m.fullName}"
+            alt="${escapeHtml(m.fullName)}"
             style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border-color); cursor: pointer; background-color: var(--slate-100);"
-            onclick="openPhotoPreviewModal('${m.photoUrl}', '${escapeHtml(m.fullName)}')"
+            onclick="openPhotoPreviewModal('${photoUrl}', '${escapeHtml(m.fullName)}')"
             title="Click to zoom photo"
-            onerror="this.src='assets/club-logo.png'"
+            onerror="this.src='assets/user-placeholder.svg'"
           >
         </td>
         <td>
@@ -217,6 +218,7 @@ function renderAdminDashboard(members) {
         <td style="text-align: right;">
           <div style="display: inline-flex; gap: 0.35rem; justify-content: flex-end;">
             <button class="btn btn-secondary btn-sm" onclick="viewMemberDetailsModal('${m.membershipId}')" title="View details">👁️ View</button>
+            <button class="btn btn-outline-primary btn-sm" onclick="window.open('success.html?id=' + encodeURIComponent('${m.membershipId}'), '_blank')" title="View / Download Digital ID Card">🪪 Card</button>
             <button class="btn btn-outline-primary btn-sm" onclick="openEditMemberModal('${m.membershipId}')" title="Edit member">✏️ Edit</button>
             <button class="btn btn-secondary btn-sm" style="color: var(--danger-600);" onclick="confirmDeleteSingleMember('${m.membershipId}')" title="Delete record">🗑️</button>
           </div>
@@ -713,8 +715,11 @@ function viewMemberDetailsModal(membershipId) {
   const modal = document.getElementById('adminModal');
   const modalBody = document.getElementById('adminModalBody');
 
-  const photoUrl = formatDriveImageUrl(member.photoUrl);
-  const photoLink = member.photoUrl ? `<a href="${member.photoUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm">🔗 Open Photo URL</a>` : '<span style="color: var(--slate-400);">No photo uploaded</span>';
+  const rawPhoto = member.photoUrl || member.photoBase64 || member.photo || '';
+  const photoUrl = formatDriveImageUrl(rawPhoto);
+  const photoLink = (rawPhoto && rawPhoto !== 'assets/club-logo.png' && !rawPhoto.startsWith('data:')) 
+    ? `<a href="${rawPhoto}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm">🔗 Open Photo URL</a>` 
+    : '<span style="color: var(--slate-500); font-size: 0.8rem;">No photo uploaded</span>';
 
   modalBody.innerHTML = `
     <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem;">
@@ -729,8 +734,9 @@ function viewMemberDetailsModal(membershipId) {
       <div style="text-align: center;">
         <img 
           src="${photoUrl}" 
+          alt="${escapeHtml(member.fullName)}"
           style="width: 110px; height: 110px; border-radius: var(--radius-md); object-fit: cover; border: 2px solid var(--primary-200); box-shadow: var(--shadow-sm); background-color: var(--slate-100);"
-          onerror="this.src='assets/club-logo.png'"
+          onerror="this.src='assets/user-placeholder.svg'"
         >
         <div style="margin-top: 0.65rem;">
           ${photoLink}
@@ -785,8 +791,9 @@ function viewMemberDetailsModal(membershipId) {
       <div style="font-weight: 600; color: var(--slate-800);">${escapeHtml(member.address || 'N/A')}, ${escapeHtml(member.district || '')}, ${escapeHtml(member.state || '')} - ${escapeHtml(member.pinCode || '')}</div>
     </div>
 
-    <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+    <div style="display: flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: wrap;">
       <button class="btn btn-secondary" onclick="closeAdminModal()">Close</button>
+      <button class="btn btn-outline-primary" onclick="window.open('success.html?id=' + encodeURIComponent('${member.membershipId}'), '_blank')">🪪 Download ID Card</button>
       <button class="btn btn-outline-primary" onclick="openEditMemberModal('${member.membershipId}')">✏️ Edit Member</button>
       <button class="btn btn-gold" style="background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff;" onclick="confirmDeleteSingleMember('${member.membershipId}')">🗑️ Delete Member</button>
     </div>
@@ -939,7 +946,7 @@ function openPhotoPreviewModal(photoUrl, memberName) {
         <img 
           src="${formattedUrl}" 
           style="max-width: 100%; max-height: 380px; object-fit: contain; border-radius: 4px;"
-          onerror="this.src='assets/club-logo.png'"
+          onerror="this.src='assets/user-placeholder.svg'"
         >
       </div>
 

@@ -122,7 +122,7 @@ function renderDigitalCard(member) {
   const currentBaseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
   const verifyUrl = `${currentBaseUrl}/verify.html?id=${encodeURIComponent(member.membershipId)}`;
 
-  const rawPhoto = member.photoUrl || member.photoBase64 || '';
+  const rawPhoto = member.photoUrl || member.photoBase64 || member.photo || '';
   const photoSrc = formatDriveImageUrl(rawPhoto);
 
   // Escaped member fields for XSS security
@@ -167,7 +167,7 @@ function renderDigitalCard(member) {
           <!-- Body -->
           <div class="mc-body-row">
             <div class="mc-photo-box">
-              <img src="${photoSrc}" alt="${safeName}" onerror="this.src='assets/club-logo.png'">
+              <img src="${photoSrc}" alt="${safeName}" onerror="this.src='assets/user-placeholder.svg'">
             </div>
             
             <div class="mc-details-box">
@@ -198,7 +198,13 @@ function renderDigitalCard(member) {
           <!-- Footer -->
           <div class="mc-footer-row">
             <span class="mc-status-pill">${safeStatus} MEMBER</span>
-            <div class="mc-qr-box" id="cardQrCodeFront" title="Scan to Verify"></div>
+            <div class="mc-footer-right-group">
+              <div class="mc-signature-block">
+                <img src="assets/signature.png" class="mc-signature-img" alt="President Signature">
+                <div class="mc-signature-label">PRESIDENT SIGNATURE</div>
+              </div>
+              <div class="mc-qr-box" id="cardQrCodeFront" title="Scan to Verify"></div>
+            </div>
           </div>
         </div>
 
@@ -234,7 +240,8 @@ function renderDigitalCard(member) {
 
             <div class="mc-sign-box">
               <img src="assets/club-logo.png" class="mc-seal-img" alt="Official Seal">
-              <div class="mc-sign-line">AUTHORIZED SIGNATURE</div>
+              <img src="assets/signature.png" class="mc-signature-img-back" alt="President Signature">
+              <div class="mc-sign-line">PRESIDENT SIGNATURE</div>
               <div class="mc-qr-box" id="cardQrCodeBack" style="margin-top: 0.8rem;" title="Scan to Verify"></div>
             </div>
           </div>

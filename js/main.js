@@ -269,10 +269,12 @@ function formatDate(dateStr) {
 }
 
 /**
- * Convert Google Drive viewer URL to direct image display URL
+ * Convert Google Drive viewer URL to direct image display URL or return user placeholder
  */
 function formatDriveImageUrl(url) {
-  if (!url) return 'assets/club-logo.png';
+  if (!url || url === 'assets/club-logo.png' || url === 'assets/club-logo.jpg') {
+    return 'assets/user-placeholder.svg';
+  }
   if (url.startsWith('data:image/')) return url;
   if (url.includes('lh3.googleusercontent.com')) return url;
 
@@ -300,7 +302,7 @@ const DemoStore = {
         {
           membershipId: `${CONFIG.ID_PREFIX}-${CONFIG.ID_YEAR}-0001`,
           fullName: "Alexander Wright",
-          photoUrl: "assets/club-logo.png",
+          photoUrl: "",
           dob: "1994-05-15",
           gender: "Male",
           nationality: "Indian",
@@ -325,7 +327,23 @@ const DemoStore = {
       localStorage.setItem(this.KEY, JSON.stringify(initial));
       return initial;
     }
-    return JSON.parse(data);
+    const members = JSON.parse(data);
+    // Sanitize any legacy records where club-logo.png was incorrectly stored as member photo
+    let modified = false;
+    members.forEach(m => {
+      if (m.photoUrl === 'assets/club-logo.png' || m.photoUrl === 'assets/club-logo.jpg') {
+        m.photoUrl = '';
+        modified = true;
+      }
+      if (m.photoBase64 === 'assets/club-logo.png' || m.photoBase64 === 'assets/club-logo.jpg') {
+        m.photoBase64 = '';
+        modified = true;
+      }
+    });
+    if (modified) {
+      localStorage.setItem(this.KEY, JSON.stringify(members));
+    }
+    return members;
   },
 
   saveMember(memberData) {

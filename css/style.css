@@ -1059,6 +1059,45 @@ textarea.form-control {
   font-size: 2.1rem;
 }
 
+.mc-footer-right-group {
+  display: flex;
+  align-items: center;
+  gap: 2.2rem;
+}
+
+.mc-signature-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.mc-signature-img {
+  height: 85px;
+  max-width: 220px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+}
+
+.mc-signature-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #68cbb8;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.mc-signature-img-back {
+  height: 75px;
+  max-width: 180px;
+  object-fit: contain;
+  margin-bottom: -0.4rem;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+}
+
 .mc-qr-box {
   background: #ffffff;
   padding: 10px;
