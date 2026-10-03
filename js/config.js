@@ -7,7 +7,7 @@ const CONFIG = {
   // 1. Backend Google Apps Script Web App URL
   // Replace the placeholder below with your deployed Apps Script Executable URL!
   // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
-  WEB_APP_URL: "https://script.google.com/macros/s/AKfycbw9nEnmzf3-4oBmqIwMz3BI0E-VnzngD3RPCvXTrTZS6wj8FSzhfr9cRtE0lm1YgNc/exec", 
+  WEB_APP_URL: "https://script.google.com/macros/s/AKfycbwkhsWWLZ1gYhrSAE-3MZ3thl9SApnz3Dr1SlLHxZYI5paXMYpG8p1HUDLyRcdkFNVQ/exec", 
 
   // 2. Organization Information & Official Leadership
   ORG_NAME: "NATIONAL ARTS & SPORTS CLUB",
