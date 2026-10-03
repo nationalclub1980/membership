@@ -269,9 +269,13 @@ function formatDate(dateStr) {
 }
 
 /**
- * Convert Google Drive viewer URL to direct image display URL or return user placeholder
+ * Convert Google Drive viewer URL or member photo object to direct image display URL
  */
-function formatDriveImageUrl(url) {
+function formatDriveImageUrl(input) {
+  let url = input;
+  if (input && typeof input === 'object') {
+    url = input.photoUrl || input.photoBase64 || input.photo || '';
+  }
   if (!url || url === 'assets/club-logo.png' || url === 'assets/club-logo.jpg') {
     return 'assets/user-placeholder.svg';
   }
@@ -289,6 +293,17 @@ function formatDriveImageUrl(url) {
 }
 
 /**
+ * Get raw photo link/data from member object for persistent URL access
+ */
+function getRawMemberPhoto(member) {
+  if (!member) return '';
+  if (typeof member === 'string') return member;
+  const photo = member.photoUrl || member.photoBase64 || member.photo || '';
+  if (photo === 'assets/club-logo.png' || photo === 'assets/club-logo.jpg') return '';
+  return photo;
+}
+
+/**
  * Client-Side LocalStorage Demo Store
  */
 const DemoStore = {
@@ -303,6 +318,7 @@ const DemoStore = {
           membershipId: `${CONFIG.ID_PREFIX}-${CONFIG.ID_YEAR}-0001`,
           fullName: "Alexander Wright",
           photoUrl: "",
+          photoBase64: "",
           dob: "1994-05-15",
           gender: "Male",
           nationality: "Indian",
@@ -339,6 +355,14 @@ const DemoStore = {
         m.photoBase64 = '';
         modified = true;
       }
+      if (!m.photoUrl && m.photoBase64) {
+        m.photoUrl = m.photoBase64;
+        modified = true;
+      }
+      if (!m.photoBase64 && m.photoUrl) {
+        m.photoBase64 = m.photoUrl;
+        modified = true;
+      }
     });
     if (modified) {
       localStorage.setItem(this.KEY, JSON.stringify(members));
@@ -357,8 +381,12 @@ const DemoStore = {
     const validUntilDate = new Date(validFromDate);
     validUntilDate.setFullYear(validUntilDate.getFullYear() + CONFIG.DEFAULT_VALIDITY_YEARS);
 
+    const rawPhoto = memberData.photoUrl || memberData.photoBase64 || memberData.photo || '';
+
     const record = {
       ...memberData,
+      photoUrl: rawPhoto,
+      photoBase64: rawPhoto,
       membershipId: newId,
       validFrom: formatDate(validFromDate),
       validUntil: formatDate(validUntilDate),

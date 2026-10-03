@@ -183,7 +183,10 @@ function renderAdminDashboard(members) {
 
     const rawPhoto = m.photoUrl || m.photoBase64 || m.photo || '';
     const photoUrl = formatDriveImageUrl(rawPhoto);
-    const photoLink = (rawPhoto && rawPhoto !== 'assets/club-logo.png') ? `<a href="${photoUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.55rem;">🔗 View Link</a>` : '<span style="color: var(--slate-400); font-size: 0.8rem;">No Photo</span>';
+    const hasPhoto = rawPhoto && rawPhoto !== 'assets/club-logo.png' && rawPhoto !== 'assets/user-placeholder.svg';
+    const photoLink = hasPhoto
+      ? `<button class="btn btn-outline-primary btn-sm" style="font-size: 0.78rem; padding: 0.25rem 0.6rem;" onclick="openPhotoPreviewModal('${photoUrl}', '${escapeHtml(m.fullName)}')">📷 View Photo</button>`
+      : '<span style="color: var(--slate-400); font-size: 0.8rem;">No Photo</span>';
 
     return `
       <tr>
@@ -812,6 +815,10 @@ function openEditMemberModal(membershipId) {
   const modal = document.getElementById('adminModal');
   const modalBody = document.getElementById('adminModalBody');
 
+  const rawPhoto = member.photoUrl || member.photoBase64 || member.photo || '';
+  const photoUrl = formatDriveImageUrl(rawPhoto);
+  editNewPhotoBase64 = '';
+
   modalBody.innerHTML = `
     <h3 style="margin-bottom: 1rem;">Edit Member Record - ${member.membershipId}</h3>
     
@@ -868,6 +875,17 @@ function openEditMemberModal(membershipId) {
         </div>
       </div>
 
+      <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+        <label class="form-label">Member Photo</label>
+        <div style="display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap;">
+          <img id="editPhotoPreview" src="${photoUrl}" style="width: 60px; height: 60px; border-radius: var(--radius-md); object-fit: cover; border: 2px solid var(--primary-200); background-color: var(--slate-100);" onerror="this.src='assets/user-placeholder.svg'">
+          <div style="flex-grow: 1;">
+            <input type="file" id="editPhotoInput" accept="image/jpeg,image/png,image/webp" class="form-control" style="font-size: 0.82rem;" onchange="handleEditPhotoChange(event)">
+            <p class="form-hint" style="font-size: 0.78rem; margin-top: 0.25rem; color: var(--slate-500);">Upload a new JPG/PNG/WEBP photo to replace current member photo.</p>
+          </div>
+        </div>
+      </div>
+
       <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
         <button type="button" class="btn btn-secondary" onclick="closeAdminModal()">Cancel</button>
         <button type="submit" class="btn btn-primary">Save Member Changes</button>
@@ -876,6 +894,30 @@ function openEditMemberModal(membershipId) {
   `;
 
   modal.classList.add('active');
+}
+
+let editNewPhotoBase64 = '';
+
+function handleEditPhotoChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    showToast('Please upload a valid image file (JPG, PNG, WEBP)', 'danger');
+    e.target.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    compressImage(evt.target.result, 600, 600, 0.8, (compressed) => {
+      editNewPhotoBase64 = compressed;
+      const preview = document.getElementById('editPhotoPreview');
+      if (preview) preview.src = compressed;
+    });
+  };
+  reader.readAsDataURL(file);
 }
 
 /**
@@ -895,6 +937,12 @@ async function saveMemberEdit(e, membershipId) {
     bloodGroup: document.getElementById('editBloodGroup').value.trim(),
     address: document.getElementById('editAddress').value.trim()
   };
+
+  if (editNewPhotoBase64) {
+    updatedData.photoUrl = editNewPhotoBase64;
+    updatedData.photoBase64 = editNewPhotoBase64;
+    updatedData.photo = editNewPhotoBase64;
+  }
 
   try {
     if (CONFIG.WEB_APP_URL && !CONFIG.WEB_APP_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL")) {
