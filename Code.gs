@@ -22,6 +22,8 @@ const CONFIG = {
   CARDS_FOLDER_NAME: "Membership Cards",
   PHOTOS_FOLDER_ID: "1iGA2UX1PGgXy4xfI8t7kenfqNWBUkv9U", // Google Drive folder ID for Member Photos
   CARDS_FOLDER_ID: "1p0N2nrz-VnDFtxIsXUTgIh0AB0P53V3z",  // Google Drive folder ID for Membership Cards
+  PHOTOS_FOLDER_URL: "https://drive.google.com/drive/folders/1iGA2UX1PGgXy4xfI8t7kenfqNWBUkv9U",
+  CARDS_FOLDER_URL: "https://drive.google.com/drive/folders/1p0N2nrz-VnDFtxIsXUTgIh0AB0P53V3z",
   ID_PREFIX: "NASC",
   ID_YEAR: "2026",
   VALIDITY_YEARS: 1

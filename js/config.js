@@ -9,6 +9,10 @@ const CONFIG = {
   // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
   WEB_APP_URL: "https://script.google.com/macros/s/AKfycbwkhsWWLZ1gYhrSAE-3MZ3thl9SApnz3Dr1SlLHxZYI5paXMYpG8p1HUDLyRcdkFNVQ/exec", 
 
+  // Google Drive Folders
+  MEMBER_PHOTOS_FOLDER_URL: "https://drive.google.com/drive/folders/1iGA2UX1PGgXy4xfI8t7kenfqNWBUkv9U",
+  MEMBERSHIP_CARDS_FOLDER_URL: "https://drive.google.com/drive/folders/1p0N2nrz-VnDFtxIsXUTgIh0AB0P53V3z",
+
   // 2. Organization Information & Official Leadership
   ORG_NAME: "NATIONAL ARTS & SPORTS CLUB",
   ORG_SHORT_NAME: "NASC",
