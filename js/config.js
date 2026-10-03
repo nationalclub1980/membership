@@ -7,7 +7,7 @@ const CONFIG = {
   // 1. Backend Google Apps Script Web App URL
   // Replace the placeholder below with your deployed Apps Script Executable URL!
   // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
-  WEB_APP_URL: "https://script.google.com/macros/s/AKfycbwkhsWWLZ1gYhrSAE-3MZ3thl9SApnz3Dr1SlLHxZYI5paXMYpG8p1HUDLyRcdkFNVQ/exec", 
+  WEB_APP_URL: "https://script.google.com/macros/s/AKfycbx_mU6yud9DIaLlXuXjw5KHnmeRQXvdX5bBSwLSuYNDczpOcMOWcQIzgDPGNJYynlVV/exec", 
 
   // Google Drive Folders
   MEMBER_PHOTOS_FOLDER_URL: "https://drive.google.com/drive/folders/1iGA2UX1PGgXy4xfI8t7kenfqNWBUkv9U",
