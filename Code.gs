@@ -56,8 +56,12 @@ function doGet(e) {
 
     if (action === 'verifyMember') {
       responseData = getPublicVerificationRecord(params.id);
-    } else if (action === 'getMember' || action === 'adminLogin' || action === 'getAdminData') {
-      responseData = { status: 'error', message: 'Action requires POST request for secure authentication.' };
+    } else if (action === 'adminLogin' || action === 'login') {
+      responseData = verifyAdminLogin(params.pin);
+    } else if (action === 'getAdminData' || action === 'adminData') {
+      responseData = getAdminData(params.pin);
+    } else if (action === 'getMember' || action === 'getMemberRecord') {
+      responseData = getMemberRecord(params.id || params.membershipId || params.query, params.pin);
     } else {
       responseData = {
         status: 'success',

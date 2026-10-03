@@ -51,9 +51,19 @@ async function authenticateAndUnlock(pin, showFeedback = true) {
     let isAuthenticated = false;
 
     if (CONFIG.WEB_APP_URL && !CONFIG.WEB_APP_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL")) {
-      const resp = await fetch(`${CONFIG.WEB_APP_URL}?action=adminLogin&pin=${encodeURIComponent(pin)}`);
-      const result = await resp.json();
-      isAuthenticated = (result.status === 'success');
+      let result = null;
+      try {
+        const resp = await fetch(CONFIG.WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'adminLogin', pin: pin })
+        });
+        result = await resp.json();
+      } catch (e) {
+        const resp = await fetch(`${CONFIG.WEB_APP_URL}?action=adminLogin&pin=${encodeURIComponent(pin)}`);
+        result = await resp.json();
+      }
+      isAuthenticated = (result && result.status === 'success');
     } else {
       // Offline local demo mode validation
       isAuthenticated = (pin === CONFIG.DEMO_ONLY_PASSCODE);
@@ -105,12 +115,23 @@ async function fetchAdminData() {
   showLoading('Loading master membership database...');
   try {
     if (CONFIG.WEB_APP_URL && !CONFIG.WEB_APP_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL")) {
-      const resp = await fetch(`${CONFIG.WEB_APP_URL}?action=getAdminData&pin=${encodeURIComponent(currentAdminPin)}`);
-      const result = await resp.json();
-      if (result.status === 'success') {
+      let result = null;
+      try {
+        const resp = await fetch(CONFIG.WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getAdminData', pin: currentAdminPin })
+        });
+        result = await resp.json();
+      } catch (e) {
+        const resp = await fetch(`${CONFIG.WEB_APP_URL}?action=getAdminData&pin=${encodeURIComponent(currentAdminPin)}`);
+        result = await resp.json();
+      }
+
+      if (result && result.status === 'success') {
         allAdminMembers = result.data || [];
       } else {
-        showToast(result.message || 'Failed to fetch admin records', 'danger');
+        showToast((result && result.message) || 'Failed to fetch admin records', 'danger');
         allAdminMembers = [];
       }
     } else {
