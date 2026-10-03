@@ -41,23 +41,41 @@ async function loadAndRenderMember(memberId) {
     let memberData = null;
 
     if (CONFIG.WEB_APP_URL && !CONFIG.WEB_APP_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL")) {
-      const resp = await fetch(`${CONFIG.WEB_APP_URL}?action=getMember&id=${encodeURIComponent(memberId)}`);
-      const result = await resp.json();
-      if (result.status === 'success') {
+      const adminPin = sessionStorage.getItem('nasc_admin_pin') || '';
+      const pinParam = adminPin ? `&pin=${encodeURIComponent(adminPin)}` : '';
+      let resp = await fetch(`${CONFIG.WEB_APP_URL}?action=getMember&id=${encodeURIComponent(memberId)}${pinParam}`);
+      let result = await resp.json();
+      
+      if (result.status === 'success' && result.data) {
         memberData = result.data;
+      } else {
+        // Fall back to verifyMember endpoint for public card display
+        resp = await fetch(`${CONFIG.WEB_APP_URL}?action=verifyMember&id=${encodeURIComponent(memberId)}`);
+        result = await resp.json();
+        if (result.status === 'success' && result.data) {
+          memberData = result.data;
+        }
       }
-    } else {
+    }
+
+    if (!memberData) {
       memberData = DemoStore.findMember(memberId);
     }
 
     if (memberData) {
+      sessionStorage.setItem('currentMember', JSON.stringify(memberData));
       renderDigitalCard(memberData);
     } else {
       showMemberNotFound(memberId);
     }
   } catch (err) {
     console.error('Error fetching member:', err);
-    showToast('Failed to load member card', 'danger');
+    const localMember = DemoStore.findMember(memberId);
+    if (localMember) {
+      renderDigitalCard(localMember);
+    } else {
+      showMemberNotFound(memberId);
+    }
   } finally {
     hideLoading();
   }

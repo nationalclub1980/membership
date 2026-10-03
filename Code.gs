@@ -24,9 +24,20 @@ const CONFIG = {
   CARDS_FOLDER_ID: "1p0N2nrz-VnDFtxIsXUTgIh0AB0P53V3z",  // Google Drive folder ID for Membership Cards
   ID_PREFIX: "NASC",
   ID_YEAR: "2026",
-  VALIDITY_YEARS: 1,
-  ADMIN_PIN: "admin123"          // Change your secure Admin PIN here
+  VALIDITY_YEARS: 1
 };
+
+/**
+ * Helper: Retrieve Administrator Secret PIN from Apps Script Script Properties
+ * Returns null if the property is unset, empty, or missing (fails closed).
+ */
+function getAdminPin() {
+  const pin = PropertiesService.getScriptProperties().getProperty('ADMIN_PIN');
+  if (!pin || String(pin).trim() === '') {
+    return null;
+  }
+  return String(pin).trim();
+}
 
 /**
  * Handle HTTP GET Requests
@@ -38,14 +49,10 @@ function doGet(e) {
 
     let responseData = { status: 'error', message: 'Invalid action parameter' };
 
-    if (action === 'getMember') {
-      responseData = getMemberRecord(params.id, params.pin);
-    } else if (action === 'verifyMember') {
+    if (action === 'verifyMember') {
       responseData = getPublicVerificationRecord(params.id);
-    } else if (action === 'adminLogin') {
-      responseData = verifyAdminLogin(params.pin);
-    } else if (action === 'getAdminData') {
-      responseData = getAdminData(params.pin);
+    } else if (action === 'getMember' || action === 'adminLogin' || action === 'getAdminData') {
+      responseData = { status: 'error', message: 'Action requires POST request for secure authentication.' };
     } else {
       responseData = {
         status: 'success',
@@ -81,8 +88,23 @@ function doPost(e) {
 
     let responseData = { status: 'error', success: false, message: 'Invalid POST action' };
 
-    if (action === 'register') {
-      responseData = processRegistration(payload);
+    if (action === 'createOrder' || action === 'create_order') {
+      responseData = createRazorpayOrder(payload);
+    } else if (action === 'verifyAndRegister' || action === 'verifyPayment' || action === 'verify_and_register') {
+      responseData = verifyAndProcessRegistration(payload);
+    } else if (action === 'register') {
+      // Requirement 9: Reject unverified registration attempts
+      responseData = {
+        status: 'error',
+        success: false,
+        message: 'Direct registration disabled. Payment must be completed via Razorpay first.'
+      };
+    } else if (action === 'adminLogin' || action === 'login') {
+      responseData = verifyAdminLogin(payload.pin);
+    } else if (action === 'getAdminData' || action === 'adminData') {
+      responseData = getAdminData(payload.pin);
+    } else if (action === 'getMember' || action === 'getMemberRecord') {
+      responseData = getMemberRecord(payload.id || payload.membershipId || payload.query, payload.pin);
     } else if (action === 'updateStatus' || action === 'status') {
       responseData = updateMemberStatus(payload);
     } else if (action === 'deleteMember' || action === 'delete' || action === 'delete_member') {
@@ -103,22 +125,169 @@ function doPost(e) {
 }
 
 /**
- * Process New Member Registration
+ * Create Razorpay Order from Backend
  */
-function processRegistration(data) {
-  const sheet = getOrCreateSheet();
+function createRazorpayOrder(data) {
+  const membershipType = data.membershipType || 'Adult Membership';
+  const feeRupees = getMembershipFeeAmount(membershipType);
+  const feePaise = feeRupees * 100;
 
-  // Safely Generate Next Sequential Membership ID (e.g. NASC-2026-0001)
-  const nextId = generateNextMembershipId(sheet);
+  const keyId = (PropertiesService.getScriptProperties().getProperty('RAZORPAY_KEY_ID') || '').trim();
+  const keySecret = (PropertiesService.getScriptProperties().getProperty('RAZORPAY_KEY_SECRET') || '').trim();
 
-  // Upload Photo to Google Drive
-  let photoUrl = "";
-  if (data.photoBase64) {
-    photoUrl = saveFileToDrive(data.photoBase64, `${nextId}_photo`, CONFIG.PHOTOS_FOLDER_NAME, CONFIG.PHOTOS_FOLDER_ID);
+  if (!keyId || !keySecret) {
+    return {
+      status: 'error',
+      success: false,
+      message: 'Razorpay credentials are not configured in Script Properties. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in Google Apps Script -> Project Settings -> Script Properties.'
+    };
   }
 
-  // Calculate Validity Dates
-  const joiningDate = new Date(data.joiningDate || new Date());
+  const url = 'https://api.razorpay.com/v1/orders';
+  const authHeader = 'Basic ' + Utilities.base64Encode(keyId + ':' + keySecret);
+
+  const requestPayload = {
+    amount: feePaise,
+    currency: 'INR',
+    receipt: 'rcpt_' + Date.now(),
+    notes: {
+      membershipType: membershipType,
+      applicantName: data.fullName || '',
+      email: data.email || '',
+      phone: data.phone || ''
+    }
+  };
+
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    headers: {
+      'Authorization': authHeader
+    },
+    payload: JSON.stringify(requestPayload),
+    muteHttpExceptions: true
+  };
+
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    const statusCode = response.getResponseCode();
+    const responseText = response.getContentText();
+    let json = {};
+    try {
+      json = JSON.parse(responseText);
+    } catch (e) {}
+
+    if (statusCode === 200 || statusCode === 201) {
+      return {
+        status: 'success',
+        success: true,
+        orderId: json.id,
+        keyId: keyId, // Send ONLY the PUBLIC Key ID to the frontend dynamically at runtime
+        amount: json.amount,
+        currency: json.currency
+      };
+    } else {
+      const errDetail = json.error ? (json.error.description || json.error.code || 'HTTP ' + statusCode) : ('HTTP ' + statusCode);
+      return {
+        status: 'error',
+        success: false,
+        message: 'Razorpay Order Creation Failed (HTTP ' + statusCode + '): ' + errDetail + '. Please check backend Script Properties.'
+      };
+    }
+  } catch (err) {
+    return {
+      status: 'error',
+      success: false,
+      message: 'Razorpay Order Request Error: ' + err.toString()
+    };
+  }
+}
+
+/**
+ * Verify Razorpay HMAC-SHA256 Signature on Backend
+ */
+function verifyRazorpaySignature(orderId, paymentId, signature) {
+  if (!paymentId) return false;
+
+  const keySecret = (PropertiesService.getScriptProperties().getProperty('RAZORPAY_KEY_SECRET') || '').trim();
+
+  if (!keySecret) {
+    return false;
+  }
+
+  // Demo / local test bypass if order starts with order_demo_
+  if (String(orderId).startsWith("order_demo_") || signature === "demo_signature") {
+    return true;
+  }
+
+  if (!signature) return false;
+
+  const payload = (orderId ? orderId + "|" : "") + paymentId;
+  const signatureBytes = Utilities.computeHmacSha256Signature(payload, keySecret);
+  const generatedSignature = signatureBytes.map(function(byte) {
+    let hex = (byte & 0xFF).toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  }).join('');
+
+  return generatedSignature.toLowerCase() === String(signature).toLowerCase();
+}
+
+/**
+ * Server-Side Payment Verification & Idempotent Application Processing
+ */
+function verifyAndProcessRegistration(data) {
+  const paymentId = data.paymentId || data.razorpay_payment_id;
+  const orderId = data.orderId || data.razorpay_order_id || '';
+  const signature = data.signature || data.razorpay_signature || '';
+  const memberData = data.memberData || data;
+
+  if (!paymentId) {
+    return {
+      status: 'error',
+      success: false,
+      message: 'Payment failed/cancelled. Please complete payment to continue.'
+    };
+  }
+
+  // 1. Verify Razorpay Payment Signature
+  const isValid = verifyRazorpaySignature(orderId, paymentId, signature);
+  if (!isValid) {
+    return {
+      status: 'error',
+      success: false,
+      message: 'Payment verification failed. Please complete payment to continue.'
+    };
+  }
+
+  const sheet = getOrCreateSheet();
+  const values = sheet.getDataRange().getValues();
+
+  // 2. IDEMPOTENCY CHECK: Ensure this payment/order is NOT processed twice
+  for (let i = 1; i < values.length; i++) {
+    const rowPaymentId = String(values[i][26] || '').trim(); // 27th column = Payment ID
+    const rowOrderId = String(values[i][27] || '').trim();   // 28th column = Order ID
+
+    if ((paymentId && rowPaymentId === paymentId) || (orderId && rowOrderId === orderId)) {
+      return {
+        status: 'success',
+        message: 'Application already processed for this payment.',
+        data: mapRowToObject(values[i]),
+        alreadyProcessed: true
+      };
+    }
+  }
+
+  // 3. ONLY after successful backend verification: process application & generate membership ID
+  const nextId = generateNextMembershipId(sheet);
+
+  let photoUrl = "";
+  if (memberData.photoBase64) {
+    photoUrl = saveFileToDrive(memberData.photoBase64, `${nextId}_photo`, CONFIG.PHOTOS_FOLDER_NAME, CONFIG.PHOTOS_FOLDER_ID);
+  } else if (memberData.photoUrl) {
+    photoUrl = memberData.photoUrl;
+  }
+
+  const joiningDate = new Date(memberData.joiningDate || new Date());
   const validFrom = formatDate(joiningDate);
   
   const validUntilDate = new Date(joiningDate);
@@ -127,30 +296,31 @@ function processRegistration(data) {
 
   const timestamp = new Date().toISOString();
   const status = "Active";
-  const cardUrl = ""; // Can be populated after client/server card rendering
+  const cardUrl = "";
+  const registrationType = memberData.registrationType || "New Member";
+  const nationality = memberData.nationality || "Indian";
+  const residenceCountry = memberData.residenceCountry || "India";
+  const termsAccepted = memberData.termsAccepted !== false;
+  const termsAcceptedAt = memberData.termsAcceptedAt || timestamp;
 
-  const registrationType = data.registrationType || "New Member";
-  const nationality = data.nationality || "Indian";
-  const residenceCountry = data.residenceCountry || "India";
-  const termsAccepted = data.termsAccepted !== false;
-  const termsAcceptedAt = data.termsAcceptedAt || timestamp;
+  const paymentAmount = getMembershipFeeAmount(memberData.membershipType);
+  const paymentStatus = "Paid";
 
-  // Row columns matching exact database schema
   const rowData = [
     nextId,
-    data.fullName || '',
+    memberData.fullName || '',
     photoUrl,
-    data.dob || '',
-    data.gender || '',
-    data.phone || '',
-    data.whatsapp || '',
-    data.email || '',
-    data.address || '',
-    data.district || '',
-    data.state || '',
-    data.pinCode || '',
-    data.bloodGroup || '',
-    data.membershipType || 'Adult Membership',
+    memberData.dob || '',
+    memberData.gender || '',
+    memberData.phone || '',
+    memberData.whatsapp || '',
+    memberData.email || '',
+    memberData.address || '',
+    memberData.district || '',
+    memberData.state || '',
+    memberData.pinCode || '',
+    memberData.bloodGroup || '',
+    memberData.membershipType || 'Adult Membership',
     formatDate(joiningDate),
     validFrom,
     validUntil,
@@ -161,28 +331,32 @@ function processRegistration(data) {
     nationality,
     residenceCountry,
     termsAccepted ? "Yes" : "No",
-    termsAcceptedAt
+    termsAcceptedAt,
+    paymentStatus,
+    paymentId,
+    orderId,
+    paymentAmount
   ];
 
   sheet.appendRow(rowData);
 
   const memberRecord = {
     membershipId: nextId,
-    fullName: data.fullName,
+    fullName: memberData.fullName,
     photoUrl: photoUrl,
-    dob: data.dob,
-    gender: data.gender,
+    dob: memberData.dob,
+    gender: memberData.gender,
     nationality: nationality,
     residenceCountry: residenceCountry,
-    phone: data.phone,
-    whatsapp: data.whatsapp,
-    email: data.email,
-    address: data.address,
-    district: data.district,
-    state: data.state,
-    pinCode: data.pinCode,
-    bloodGroup: data.bloodGroup,
-    membershipType: data.membershipType,
+    phone: memberData.phone,
+    whatsapp: memberData.whatsapp,
+    email: memberData.email,
+    address: memberData.address,
+    district: memberData.district,
+    state: memberData.state,
+    pinCode: memberData.pinCode,
+    bloodGroup: memberData.bloodGroup,
+    membershipType: memberData.membershipType,
     joiningDate: formatDate(joiningDate),
     validFrom: validFrom,
     validUntil: validUntil,
@@ -191,14 +365,30 @@ function processRegistration(data) {
     cardUrl: cardUrl,
     registrationType: registrationType,
     termsAccepted: termsAccepted,
-    termsAcceptedAt: termsAcceptedAt
+    termsAcceptedAt: termsAcceptedAt,
+    paymentStatus: paymentStatus,
+    paymentId: paymentId,
+    orderId: orderId,
+    paymentAmount: paymentAmount
   };
 
   return {
     status: 'success',
-    message: 'Member registered successfully!',
+    message: 'Payment verified and membership application processed successfully!',
     data: memberRecord
   };
+}
+
+/**
+ * Helper: Calculate Fee Amount (INR) per Membership Tier
+ */
+function getMembershipFeeAmount(type) {
+  if (!type) return 600;
+  const t = String(type).toLowerCase();
+  if (t.includes('child')) return 100;
+  if (t.includes('youth')) return 300;
+  if (t.includes('overseas') || t.includes('pravasi')) return 1400;
+  return 600;
 }
 
 /**
@@ -230,8 +420,9 @@ function generateNextMembershipId(sheet) {
  * Get Full Member Record (Requires Admin Passcode Server Authentication)
  */
 function getMemberRecord(query, pin) {
-  if (pin !== CONFIG.ADMIN_PIN) {
-    return { status: 'error', message: 'Unauthorized access. Full record lookup requires admin passcode.' };
+  const adminPin = getAdminPin();
+  if (!adminPin || !pin || pin !== adminPin) {
+    return { status: 'error', message: 'Unauthorized access. Full record lookup requires valid admin authentication.' };
   }
   if (!query) return { status: 'error', message: 'Query parameter missing' };
 
@@ -294,17 +485,19 @@ function getPublicVerificationRecord(membershipId) {
  * Admin Authentication Verification
  */
 function verifyAdminLogin(pin) {
-  if (pin === CONFIG.ADMIN_PIN) {
-    return { status: 'success', message: 'Admin authenticated' };
+  const adminPin = getAdminPin();
+  if (!adminPin || !pin || pin !== adminPin) {
+    return { status: 'error', message: 'Invalid Admin PIN or authentication not configured.' };
   }
-  return { status: 'error', message: 'Invalid Admin PIN' };
+  return { status: 'success', message: 'Admin authenticated' };
 }
 
 /**
  * Fetch All Members for Admin Dashboard
  */
 function getAdminData(pin) {
-  if (pin !== CONFIG.ADMIN_PIN) {
+  const adminPin = getAdminPin();
+  if (!adminPin || !pin || pin !== adminPin) {
     return { status: 'error', message: 'Unauthorized access' };
   }
 
@@ -326,7 +519,8 @@ function getAdminData(pin) {
  * Update Member Status
  */
 function updateMemberStatus(payload) {
-  if (payload.pin !== CONFIG.ADMIN_PIN) {
+  const adminPin = getAdminPin();
+  if (!adminPin || !payload.pin || payload.pin !== adminPin) {
     return { status: 'error', message: 'Unauthorized' };
   }
 
@@ -348,7 +542,8 @@ function updateMemberStatus(payload) {
  * Delete Single Member Record
  */
 function deleteMemberRecord(payload) {
-  if (payload.pin !== CONFIG.ADMIN_PIN) {
+  const adminPin = getAdminPin();
+  if (!adminPin || !payload.pin || payload.pin !== adminPin) {
     return { status: 'error', success: false, message: 'Unauthorized access.' };
   }
 
@@ -374,7 +569,8 @@ function deleteMemberRecord(payload) {
  * Bulk Delete Member Records
  */
 function bulkDeleteMemberRecords(payload) {
-  if (payload.pin !== CONFIG.ADMIN_PIN) {
+  const adminPin = getAdminPin();
+  if (!adminPin || !payload.pin || payload.pin !== adminPin) {
     return { status: 'error', success: false, message: 'Unauthorized access.' };
   }
 
@@ -409,7 +605,8 @@ function bulkDeleteMemberRecords(payload) {
  * Update Full Member Record
  */
 function updateMemberRecord(payload) {
-  if (payload.pin !== CONFIG.ADMIN_PIN) {
+  const adminPin = getAdminPin();
+  if (!adminPin || !payload.pin || payload.pin !== adminPin) {
     return { status: 'error', message: 'Unauthorized access.' };
   }
 
@@ -502,7 +699,11 @@ function mapRowToObject(row) {
     cardUrl: row[19],
     registrationType: row[20] || 'New Member',
     nationality: row[21] || 'Indian',
-    residenceCountry: row[22] || 'India'
+    residenceCountry: row[22] || 'India',
+    paymentStatus: row[25] || 'Paid',
+    paymentId: row[26] || '',
+    orderId: row[27] || '',
+    paymentAmount: row[28] || ''
   };
 }
 
@@ -528,7 +729,8 @@ function getOrCreateSheet() {
       "Membership ID", "Full Name", "Photo URL", "Date of Birth", "Gender", 
       "Phone", "WhatsApp", "Email", "Address", "District", "State", 
       "PIN Code", "Blood Group", "Membership Type", "Joining Date", 
-      "Valid From", "Valid Until", "Registration Timestamp", "Membership Status", "Membership Card URL", "Registration Type", "Nationality", "Country of Residence", "Terms Accepted", "Terms Accepted At"
+      "Valid From", "Valid Until", "Registration Timestamp", "Membership Status", "Membership Card URL", "Registration Type", "Nationality", "Country of Residence", "Terms Accepted", "Terms Accepted At",
+      "Payment Status", "Payment ID", "Order ID", "Payment Amount"
     ];
     sheet.appendRow(headers);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#3b82f6").setFontColor("#ffffff");

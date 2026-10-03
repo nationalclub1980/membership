@@ -221,7 +221,7 @@ function renderAdminDashboard(members) {
         <td style="text-align: right;">
           <div style="display: inline-flex; gap: 0.35rem; justify-content: flex-end;">
             <button class="btn btn-secondary btn-sm" onclick="viewMemberDetailsModal('${m.membershipId}')" title="View details">👁️ View</button>
-            <button class="btn btn-outline-primary btn-sm" onclick="window.open('success.html?id=' + encodeURIComponent('${m.membershipId}'), '_blank')" title="View / Download Digital ID Card">🪪 Card</button>
+            <button class="btn btn-outline-primary btn-sm" onclick="openMemberCardView('${m.membershipId}')" title="View / Download Digital ID Card">🪪 Card</button>
             <button class="btn btn-outline-primary btn-sm" onclick="openEditMemberModal('${m.membershipId}')" title="Edit member">✏️ Edit</button>
             <button class="btn btn-secondary btn-sm" style="color: var(--danger-600);" onclick="confirmDeleteSingleMember('${m.membershipId}')" title="Delete record">🗑️</button>
           </div>
@@ -796,13 +796,30 @@ function viewMemberDetailsModal(membershipId) {
 
     <div style="display: flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: wrap;">
       <button class="btn btn-secondary" onclick="closeAdminModal()">Close</button>
-      <button class="btn btn-outline-primary" onclick="window.open('success.html?id=' + encodeURIComponent('${member.membershipId}'), '_blank')">🪪 Download ID Card</button>
+      <button class="btn btn-outline-primary" onclick="openMemberCardView('${member.membershipId}')">🪪 Download ID Card</button>
       <button class="btn btn-outline-primary" onclick="openEditMemberModal('${member.membershipId}')">✏️ Edit Member</button>
       <button class="btn btn-gold" style="background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff;" onclick="confirmDeleteSingleMember('${member.membershipId}')">🗑️ Delete Member</button>
     </div>
   `;
 
   modal.classList.add('active');
+}
+
+/**
+ * Open member ID card view in success.html with session caching
+ */
+function openMemberCardView(membershipId) {
+  if (!membershipId) return;
+  const member = allAdminMembers.find(m => m.membershipId === membershipId);
+  if (member) {
+    sessionStorage.setItem('currentMember', JSON.stringify(member));
+  } else {
+    const localMember = DemoStore.findMember(membershipId);
+    if (localMember) {
+      sessionStorage.setItem('currentMember', JSON.stringify(localMember));
+    }
+  }
+  window.open(`success.html?id=${encodeURIComponent(membershipId)}`, '_blank');
 }
 
 /**

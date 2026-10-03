@@ -403,13 +403,20 @@ const DemoStore = {
   },
 
   findMember(idOrQuery) {
+    if (!idOrQuery) return null;
     const members = this.getMembers();
-    const q = idOrQuery.trim().toLowerCase();
-    return members.find(m => 
-      m.membershipId.toLowerCase() === q || 
-      m.phone.toLowerCase() === q ||
-      m.email.toLowerCase() === q
-    );
+    const q = String(idOrQuery).trim().toLowerCase();
+    return members.find(m => {
+      const mid = String(m.membershipId || '').toLowerCase();
+      const phone = String(m.phone || '').toLowerCase();
+      const email = String(m.email || '').toLowerCase();
+      const cleanMid = mid.replace(/[^a-z0-9]/g, '');
+      const cleanQ = q.replace(/[^a-z0-9]/g, '');
+      return mid === q || 
+             phone === q ||
+             email === q ||
+             (cleanQ.length >= 3 && cleanMid.includes(cleanQ));
+    });
   },
 
   updateStatus(membershipId, newStatus) {
