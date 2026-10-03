@@ -97,11 +97,7 @@ function doPost(e) {
 
     let responseData = { status: 'error', success: false, message: 'Invalid POST action' };
 
-    if (action === 'createOrder' || action === 'create_order') {
-      responseData = createRazorpayOrder(payload);
-    } else if (action === 'verifyAndRegister' || action === 'verifyPayment' || action === 'verify_and_register') {
-      responseData = verifyAndProcessRegistration(payload);
-    } else if (action === 'register') {
+    if (action === 'register' || action === 'createOrder' || action === 'create_order' || action === 'verifyAndRegister' || action === 'verifyPayment' || action === 'verify_and_register') {
       responseData = registerMemberDirect(payload);
     } else if (action === 'adminLogin' || action === 'login') {
       responseData = verifyAdminLogin(payload.pin);
