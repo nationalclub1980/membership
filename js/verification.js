@@ -5,7 +5,6 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const verifyForm = document.getElementById('verifyForm');
-  const verifyResultContainer = document.getElementById('verifyResult');
 
   // Check URL query param (e.g., verify.html?id=NASC-2026-0001)
   const urlParams = new URLSearchParams(window.location.search);
@@ -33,6 +32,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
+ * Security Helper: Escape HTML strings to prevent XSS
+ */
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
  * Execute public membership verification lookup
  */
 async function performVerification(membershipId) {
@@ -49,7 +61,7 @@ async function performVerification(membershipId) {
     if (CONFIG.WEB_APP_URL && !CONFIG.WEB_APP_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL")) {
       const resp = await fetch(`${CONFIG.WEB_APP_URL}?action=verifyMember&id=${encodeURIComponent(normalizedId)}`);
       const apiRes = await resp.json();
-      if (apiRes.status === 'success') {
+      if (apiRes && apiRes.status === 'success' && apiRes.data) {
         result = apiRes.data;
       }
     } else {
@@ -74,12 +86,12 @@ async function performVerification(membershipId) {
     if (result) {
       renderVerificationSuccess(result);
     } else {
-      renderVerificationFailed(membershipId);
+      renderVerificationFailed(normalizedId);
     }
 
   } catch (err) {
     console.error('Verification error:', err);
-    showToast('Failed to complete verification request', 'danger');
+    showToast('Unable to connect to the verification service. Please try again.', 'danger');
   } finally {
     hideLoading();
   }
@@ -93,7 +105,7 @@ function renderVerificationSuccess(data) {
   
   const isStatusActive = (data.status || '').toLowerCase() === 'active';
   const badgeClass = isStatusActive ? 'verify-badge-verified' : 'verify-badge-invalid';
-  const badgeText = isStatusActive ? 'VERIFIED ACTIVE MEMBER' : `MEMBERSHIP STATUS: ${(data.status || 'INACTIVE').toUpperCase()}`;
+  const badgeText = isStatusActive ? 'VERIFIED ACTIVE MEMBER' : `MEMBERSHIP STATUS: ${escapeHtml(data.status || 'INACTIVE').toUpperCase()}`;
   const badgeIcon = isStatusActive ? '✅' : '⚠️';
 
   container.innerHTML = `
@@ -107,8 +119,8 @@ function renderVerificationSuccess(data) {
       <div style="display: flex; gap: 1.5rem; align-items: center; justify-content: center; flex-wrap: wrap; margin: 1.5rem 0; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
         <img src="${formatDriveImageUrl(data.photoUrl || data.photoBase64 || data.photo)}" alt="${escapeHtml(data.fullName)}" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-500); box-shadow: var(--shadow-md);" onerror="this.src='assets/user-placeholder.svg'">
         <div>
-          <h3 style="font-size: 1.4rem; color: var(--slate-900);">${data.fullName}</h3>
-          <div style="font-family: monospace; font-size: 1.1rem; color: var(--primary-600); font-weight: 700;">${data.membershipId}</div>
+          <h3 style="font-size: 1.4rem; color: var(--slate-900);">${escapeHtml(data.fullName)}</h3>
+          <div style="font-family: monospace; font-size: 1.1rem; color: var(--primary-600); font-weight: 700;">${escapeHtml(data.membershipId)}</div>
         </div>
       </div>
 
@@ -116,19 +128,19 @@ function renderVerificationSuccess(data) {
       <div class="verify-details-grid">
         <div class="verify-detail-item">
           <div class="verify-detail-label">NATIONALITY</div>
-          <div class="verify-detail-val">${data.nationality || 'Indian'}</div>
+          <div class="verify-detail-val">${escapeHtml(data.nationality || 'Indian')}</div>
         </div>
         <div class="verify-detail-item">
           <div class="verify-detail-label">COUNTRY OF RESIDENCE</div>
-          <div class="verify-detail-val">${data.residenceCountry || 'India'}</div>
+          <div class="verify-detail-val">${escapeHtml(data.residenceCountry || 'India')}</div>
         </div>
         <div class="verify-detail-item">
           <div class="verify-detail-label">MEMBERSHIP TYPE</div>
-          <div class="verify-detail-val">${data.membershipType || 'Adult Membership'}</div>
+          <div class="verify-detail-val">${escapeHtml(data.membershipType || 'Adult Membership')}</div>
         </div>
         <div class="verify-detail-item">
           <div class="verify-detail-label">MEMBERSHIP STATUS</div>
-          <div class="verify-detail-val" style="color: ${isStatusActive ? 'var(--success-600)' : 'var(--danger-600)'}">${data.status || 'Active'}</div>
+          <div class="verify-detail-val" style="color: ${isStatusActive ? 'var(--success-600)' : 'var(--danger-600)'}">${escapeHtml(data.status || 'Active')}</div>
         </div>
         <div class="verify-detail-item">
           <div class="verify-detail-label">VALID FROM</div>
@@ -159,7 +171,7 @@ function renderVerificationFailed(membershipId) {
       </div>
       
       <p style="color: var(--slate-600); margin: 1rem 0;">
-        No active registration record was found for Membership ID: <strong>"${membershipId}"</strong>.
+        No active registration record was found for Membership ID: <strong>"${escapeHtml(membershipId)}"</strong>.
       </p>
 
       <p style="font-size: 0.9rem; color: var(--slate-500);">
@@ -168,3 +180,4 @@ function renderVerificationFailed(membershipId) {
     </div>
   `;
 }
+

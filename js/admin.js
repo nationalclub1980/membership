@@ -623,110 +623,143 @@ async function executeBulkDelete() {
 }
 
 /**
+ * Safe Helper: Format date for Excel Export
+ */
+function safeExportDate(val) {
+  if (!val) return '';
+  if (typeof val === 'string' && /^\d{1,2}\s+[A-Za-z]{3}\s+\d{4}$/.test(val.trim())) {
+    return val.trim();
+  }
+  const formatted = formatDate(val);
+  return (formatted && formatted !== 'N/A') ? formatted : String(val);
+}
+
+/**
+ * Safe Helper: Format timestamp for Excel Export
+ */
+function safeExportTimestamp(val) {
+  if (!val) return '';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return String(val);
+  try {
+    return d.toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch (e) {
+    return String(val);
+  }
+}
+
+/**
  * Export Membership Database to Excel (.xlsx) file
  */
 function exportToExcel(targetMembers, label = 'Export') {
-  if (!targetMembers || targetMembers.length === 0) {
+  if (!targetMembers || !Array.isArray(targetMembers) || targetMembers.length === 0) {
     showToast('No member records available to export', 'warning');
     return;
   }
 
   showLoading('Preparing Excel spreadsheet...');
   try {
+    const xlsxLib = window.XLSX || (typeof XLSX !== 'undefined' ? XLSX : null);
+    if (!xlsxLib) {
+      throw new Error('SheetJS XLSX library is not loaded or available.');
+    }
+
     // Format dataset with full existing database fields and clean photo URLs
-    const exportRows = targetMembers.map(m => ({
-      "Member ID": m.membershipId,
-      "Registration Type": m.registrationType || 'New Member',
-      "Full Name": m.fullName,
-      "Date of Birth": m.dob || '',
-      "Gender": m.gender || '',
-      "Nationality": m.nationality || 'Indian',
-      "Country of Residence": m.residenceCountry || 'India',
-      "Phone Number": m.phone ? `'${m.phone}` : '', // Prefix with apostrophe to keep phone format in Excel
-      "WhatsApp": m.whatsapp ? `'${m.whatsapp}` : '',
-      "Email": m.email || '',
-      "Address": m.address || '',
-      "District": m.district || '',
-      "State": m.state || '',
-      "PIN Code": m.pinCode || '',
-      "Blood Group": m.bloodGroup || '',
-      "Membership Type": m.membershipType || 'Adult Membership',
-      "Joining Date": m.joiningDate || '',
-      "Valid From": m.validFrom || '',
-      "Valid Until": m.validUntil || '',
-      "Membership Status": m.status || 'Active',
-      "Registration Timestamp": m.registrationTimestamp || '',
-      "Photo Link": m.photoUrl || '' // Includes exact accessible photo URL
-    }));
+    const exportRows = targetMembers.map(m => {
+      let photoLink = m.photoUrl || m.photoBase64 || m.photo || '';
+      if (photoLink.startsWith('data:')) {
+        photoLink = 'Base64 Image Data';
+      }
+
+      return {
+        "Member ID": m.membershipId || '',
+        "Registration Type": m.registrationType || 'New Member',
+        "Full Name": m.fullName || '',
+        "Date of Birth": safeExportDate(m.dob),
+        "Gender": m.gender || '',
+        "Nationality": m.nationality || 'Indian',
+        "Country of Residence": m.residenceCountry || 'India',
+        "Phone Number": (m.phone !== undefined && m.phone !== null) ? String(m.phone).trim() : '',
+        "WhatsApp": (m.whatsapp !== undefined && m.whatsapp !== null) ? String(m.whatsapp).trim() : '',
+        "Email": m.email || '',
+        "Address": m.address || '',
+        "District": m.district || '',
+        "State": m.state || '',
+        "PIN Code": (m.pinCode !== undefined && m.pinCode !== null) ? String(m.pinCode).trim() : '',
+        "Blood Group": m.bloodGroup || '',
+        "Membership Type": m.membershipType || 'Adult Membership',
+        "Joining Date": safeExportDate(m.joiningDate),
+        "Valid From": safeExportDate(m.validFrom),
+        "Valid Until": safeExportDate(m.validUntil),
+        "Membership Status": m.status || 'Active',
+        "Registration Timestamp": safeExportTimestamp(m.registrationTimestamp),
+        "Photo Link": photoLink,
+        "Membership Card URL": m.cardUrl || '',
+        "Payment Status": m.paymentStatus || '',
+        "Payment ID": (m.paymentId !== undefined && m.paymentId !== null) ? String(m.paymentId).trim() : '',
+        "Order ID": (m.orderId !== undefined && m.orderId !== null) ? String(m.orderId).trim() : '',
+        "Payment Amount": (m.paymentAmount !== undefined && m.paymentAmount !== null) ? m.paymentAmount : ''
+      };
+    });
 
     const dateStr = new Date().toISOString().split('T')[0];
-    const fileName = `National-Arts-Sports-Club-Members-${dateStr}.xlsx`;
+    const isFiltered = (label && label.toLowerCase().includes('filter')) || (targetMembers.length < allAdminMembers.length && targetMembers !== allAdminMembers);
+    const suffix = isFiltered ? '-Filtered' : '';
+    const fileName = `National-Arts-Sports-Club-Members${suffix}-${dateStr}.xlsx`;
 
-    if (window.XLSX) {
-      // Create worksheet with SheetJS
-      const worksheet = XLSX.utils.json_to_sheet(exportRows);
+    // Create worksheet with SheetJS
+    const worksheet = xlsxLib.utils.json_to_sheet(exportRows);
 
-      // Auto-set Column Widths
-      const colWidths = [
-        { wch: 18 }, // Member ID
-        { wch: 16 }, // Registration Type
-        { wch: 24 }, // Full Name
-        { wch: 14 }, // DOB
-        { wch: 10 }, // Gender
-        { wch: 12 }, // Nationality
-        { wch: 18 }, // Residence
-        { wch: 16 }, // Phone
-        { wch: 16 }, // WhatsApp
-        { wch: 24 }, // Email
-        { wch: 30 }, // Address
-        { wch: 14 }, // District
-        { wch: 14 }, // State
-        { wch: 10 }, // PIN
-        { wch: 12 }, // Blood Group
-        { wch: 16 }, // Type
-        { wch: 14 }, // Joining Date
-        { wch: 14 }, // Valid From
-        { wch: 14 }, // Valid Until
-        { wch: 14 }, // Status
-        { wch: 24 }, // Timestamp
-        { wch: 50 }  // Photo Link
-      ];
-      worksheet['!cols'] = colWidths;
+    // Auto-set Column Widths
+    const colWidths = [
+      { wch: 18 }, // Member ID
+      { wch: 18 }, // Registration Type
+      { wch: 28 }, // Full Name
+      { wch: 15 }, // Date of Birth
+      { wch: 10 }, // Gender
+      { wch: 14 }, // Nationality
+      { wch: 20 }, // Country of Residence
+      { wch: 16 }, // Phone Number
+      { wch: 16 }, // WhatsApp
+      { wch: 26 }, // Email
+      { wch: 35 }, // Address
+      { wch: 16 }, // District
+      { wch: 16 }, // State
+      { wch: 12 }, // PIN Code
+      { wch: 12 }, // Blood Group
+      { wch: 24 }, // Membership Type
+      { wch: 15 }, // Joining Date
+      { wch: 15 }, // Valid From
+      { wch: 15 }, // Valid Until
+      { wch: 16 }, // Membership Status
+      { wch: 22 }, // Registration Timestamp
+      { wch: 45 }, // Photo Link
+      { wch: 45 }, // Membership Card URL
+      { wch: 16 }, // Payment Status
+      { wch: 22 }, // Payment ID
+      { wch: 22 }, // Order ID
+      { wch: 16 }  // Payment Amount
+    ];
+    worksheet['!cols'] = colWidths;
 
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Club Members");
+    const workbook = xlsxLib.utils.book_new();
+    xlsxLib.utils.book_append_sheet(workbook, worksheet, "Club Members");
 
-      XLSX.writeFile(workbook, fileName);
-      showToast(`Excel spreadsheet (${targetMembers.length} records) exported successfully!`, 'success');
-    } else {
-      // Fallback CSV export
-      exportToCsv(exportRows, fileName.replace('.xlsx', '.csv'));
-    }
+    xlsxLib.writeFile(workbook, fileName);
+    showToast(`Excel spreadsheet (${targetMembers.length} records) exported successfully!`, 'success');
   } catch (err) {
-    console.error('Export Error:', err);
+    console.error('Excel Export Error:', err);
     showToast('Excel export failed. Please try again.', 'danger');
   } finally {
     hideLoading();
   }
-}
-
-/**
- * Fallback CSV export if SheetJS XLSX is unavailable
- */
-function exportToCsv(rows, fileName) {
-  if (!rows || !rows.length) return;
-  const headers = Object.keys(rows[0]).join(',');
-  const csvLines = rows.map(r => 
-    Object.values(r).map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
-  );
-  const csvContent = "data:text/csv;charset=utf-8," + [headers, ...csvLines].join('\n');
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", fileName);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
 }
 
 /**
